@@ -68,7 +68,7 @@ class CrisisRepository implements ICrisisRepository {
 
     if (client != null) {
       try {
-        await client!.from('crisis_events').insert(event.toMap());
+        await client!.from('crisis_events').insert(event.toDbPayload());
       } catch (e) {
         AppLogger.warning('Failed to persist crisis event to remote DB, logged locally', error: e);
       }

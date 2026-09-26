@@ -380,6 +380,62 @@ class FamilyRepository implements IFamilyRepository {
     String officerId, {
     bool includeQuarantined = false,
   }) async {
+    if (client != null) {
+      try {
+        var query = client!
+            .from('morale_vault_media')
+            .select('''
+              id,
+              officer_id,
+              family_member_id,
+              media_url,
+              media_type,
+              security_status,
+              tags,
+              uploaded_at,
+              family_members (
+                first_name,
+                last_name,
+                relation
+              )
+            ''')
+            .eq('officer_id', officerId);
+
+        if (!includeQuarantined) {
+          query = query.inFilter('security_status', ['safe', 'human_approved']);
+        }
+
+        final res = await query.order('uploaded_at', ascending: false);
+        final list = (res as List).map((row) {
+          final fm = row['family_members'] as Map<String, dynamic>?;
+          final fmName = fm != null
+              ? '${fm['first_name']} ${fm['last_name'] ?? ''} (${fm['relation'] ?? 'Family'})'.trim()
+              : 'Family Member';
+          final tags = (row['tags'] as List?)?.map((t) => t.toString()).toList() ?? [];
+          final caption = tags.isNotEmpty ? tags.first : 'Voice note / video message from family';
+
+          return MoraleVaultItem(
+            id: row['id'] as String,
+            officerId: row['officer_id'] as String,
+            familyMemberId: row['family_member_id'] as String? ?? '',
+            familyMemberName: fmName,
+            mediaUrl: row['media_url'] as String,
+            mediaType: row['media_type'] as String? ?? 'audio',
+            securityStatus: MoraleMediaSecurityStatus.fromString(row['security_status'] as String? ?? 'safe'),
+            transcriptOrCaption: caption,
+            opsecFlags: const [],
+            uploadedAt: DateTime.tryParse(row['uploaded_at'] as String? ?? '') ?? DateTime.now(),
+          );
+        }).toList();
+
+        if (list.isNotEmpty) {
+          return list;
+        }
+      } catch (e) {
+        AppLogger.warning('Failed to fetch morale vault items from Supabase', error: e);
+      }
+    }
+
     final items = _mockMedia.where((m) => m.officerId == officerId);
     if (!includeQuarantined) {
       return items.where((m) => m.isAvailableToOfficer).toList();
@@ -402,6 +458,44 @@ class FamilyRepository implements IFamilyRepository {
       metadata: metadata,
     );
 
+    final statusStr = scanResult.recommendedStatus == MoraleMediaSecurityStatus.safe
+        ? 'safe'
+        : scanResult.recommendedStatus == MoraleMediaSecurityStatus.autoFlagged
+            ? 'auto_flagged'
+            : 'pending_review';
+
+    if (client != null) {
+      try {
+        final inserted = await client!.from('morale_vault_media').insert({
+          'officer_id': officerId,
+          'family_member_id': familyMemberId.isNotEmpty ? familyMemberId : null,
+          'media_url': mediaUrl,
+          'media_type': mediaType,
+          'security_status': statusStr,
+          'tags': [transcriptOrCaption],
+        }).select().maybeSingle();
+
+        if (inserted != null) {
+          final liveItem = MoraleVaultItem(
+            id: inserted['id'] as String,
+            officerId: officerId,
+            familyMemberId: familyMemberId,
+            familyMemberName: familyMemberName,
+            mediaUrl: mediaUrl,
+            mediaType: mediaType,
+            securityStatus: scanResult.recommendedStatus,
+            transcriptOrCaption: transcriptOrCaption,
+            opsecFlags: scanResult.detectedFlags,
+            uploadedAt: DateTime.tryParse(inserted['uploaded_at'] as String? ?? '') ?? DateTime.now(),
+          );
+          _mockMedia.insert(0, liveItem);
+          return liveItem;
+        }
+      } catch (e) {
+        AppLogger.warning('Failed to insert morale media into Supabase', error: e);
+      }
+    }
+
     final item = MoraleVaultItem(
       id: 'media-${DateTime.now().millisecondsSinceEpoch}',
       officerId: officerId,
@@ -415,7 +509,7 @@ class FamilyRepository implements IFamilyRepository {
       uploadedAt: DateTime.now(),
     );
 
-    _mockMedia.add(item);
+    _mockMedia.insert(0, item);
     return item;
   }
 

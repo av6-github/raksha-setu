@@ -36,6 +36,10 @@ void main() {
     // Verify Leave history section exists
     expect(find.text('Leave Applications & Operational Decisions'), findsOneWidget);
 
+    // Scroll down to bring leave cards into view
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+
     // Verify operational rejection badge
     expect(find.textContaining('Operational Denial'), findsWidgets);
   });

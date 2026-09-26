@@ -1,5 +1,5 @@
 // lib/features/hrms/data/hrms_repository.dart
-// Read-only repository for HRMS leaves, postings, and rosters with firewall write protections
+// Repository for HRMS leaves, postings, rosters, and leave application with firewall write protections
 
 import 'package:supabase_flutter/supabase_flutter.dart' as sp;
 import '../../../core/errors/app_exceptions.dart';
@@ -15,6 +15,13 @@ abstract class IHrmsRepository {
   Future<List<DeploymentRecord>> getDeploymentRecords(String officerId);
   Future<List<DutyRecord>> getDutyRecords(String officerId);
   Future<OrganisationalSignal> getOrganisationalSignal(String officerId);
+  Future<LeaveRecord> applyForLeave({
+    required String officerId,
+    required String leaveType,
+    required DateTime startDate,
+    required DateTime endDate,
+    String? reason,
+  });
   void assertReadOnly();
 }
 
@@ -33,6 +40,50 @@ class HrmsRepository implements IHrmsRepository {
       'Welfare-HR Firewall Violation: Ingestion of HRMS data is strictly read-only. '
       'Writing wellness scores or clinical assessments back to personnel records is legally prohibited.',
     );
+  }
+
+  @override
+  Future<LeaveRecord> applyForLeave({
+    required String officerId,
+    required String leaveType,
+    required DateTime startDate,
+    required DateTime endDate,
+    String? reason,
+  }) async {
+    final newId = 'leave-${DateTime.now().millisecondsSinceEpoch}';
+    final record = LeaveRecord(
+      id: newId,
+      officerId: officerId,
+      leaveType: leaveType,
+      startDate: startDate,
+      endDate: endDate,
+      status: 'applied',
+      rejectionReason: null,
+      isOperationalRejection: false,
+      createdAt: DateTime.now(),
+    );
+
+    // Save to mock service cache so it is returned immediately
+    mockService.addLeave(record);
+
+    if (client != null) {
+      try {
+        await client!.from('leave_records').insert({
+          'officer_id': officerId,
+          'leave_type': leaveType,
+          'start_date': startDate.toIso8601String().split('T').first,
+          'end_date': endDate.toIso8601String().split('T').first,
+          'status': 'applied',
+          'rejection_reason': reason,
+          'is_operational_rejection': false,
+        });
+        AppLogger.info('Leave application submitted to Supabase successfully');
+      } catch (e) {
+        AppLogger.warning('Failed to persist leave application to Supabase, cached locally', error: e);
+      }
+    }
+
+    return record;
   }
 
   @override

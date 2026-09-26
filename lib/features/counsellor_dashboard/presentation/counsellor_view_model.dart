@@ -19,6 +19,8 @@ class CounsellorViewModel extends ChangeNotifier {
   List<ClinicalFollowUp> _followUps = [];
   SafetyPlan? _currentSafetyPlan;
   BreakGlassEvent? _lastBreakGlassEvent;
+  List<Map<String, dynamic>> _officerAssessments = [];
+  List<Map<String, dynamic>> _emergencyAlerts = [];
 
   CounsellorViewModel({
     required this.repository,
@@ -34,6 +36,8 @@ class CounsellorViewModel extends ChangeNotifier {
   List<ClinicalFollowUp> get followUps => _followUps;
   SafetyPlan? get currentSafetyPlan => _currentSafetyPlan;
   BreakGlassEvent? get lastBreakGlassEvent => _lastBreakGlassEvent;
+  List<Map<String, dynamic>> get officerAssessments => _officerAssessments;
+  List<Map<String, dynamic>> get emergencyAlerts => _emergencyAlerts;
 
   Future<void> loadCases() async {
     _isLoading = true;
@@ -45,10 +49,23 @@ class CounsellorViewModel extends ChangeNotifier {
       if (_cases.isNotEmpty && _selectedCase == null) {
         await selectCase(_cases.first.caseId);
       }
+      _officerAssessments = await repository.getOfficerAssessments();
+      _emergencyAlerts = await repository.getEmergencyAlerts();
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> acknowledgeCrisisAlert(String alertId) async {
+    try {
+      await repository.acknowledgeCrisisAlert(alertId);
+      _emergencyAlerts = await repository.getEmergencyAlerts();
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
       notifyListeners();
     }
   }

@@ -15,6 +15,7 @@ class CommanderViewModel extends ChangeNotifier {
   UnitOperationalMetrics? _metrics;
   List<RosterRecommendation> _recommendations = [];
   Map<String, String> _availabilityRoster = {};
+  List<Map<String, dynamic>> _unitReports = [];
 
   CommanderViewModel({
     required this.repository,
@@ -29,6 +30,7 @@ class CommanderViewModel extends ChangeNotifier {
   UnitOperationalMetrics? get metrics => _metrics;
   List<RosterRecommendation> get recommendations => _recommendations;
   Map<String, String> get availabilityRoster => _availabilityRoster;
+  List<Map<String, dynamic>> get unitReports => _unitReports;
 
   Future<void> loadUnitData(String unitCode) async {
     _selectedUnitCode = unitCode;
@@ -40,10 +42,22 @@ class CommanderViewModel extends ChangeNotifier {
       _metrics = await repository.getUnitMetrics(unitCode);
       _recommendations = await repository.getRosterRecommendations(unitCode);
       _availabilityRoster = await repository.getOperationalAvailabilityRoster(unitCode);
+      _unitReports = await repository.getUnitReports(unitCode);
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> acknowledgeReport(String reportId) async {
+    try {
+      await repository.acknowledgeReport(reportId);
+      _unitReports = await repository.getUnitReports(_selectedUnitCode);
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
       notifyListeners();
     }
   }

@@ -243,10 +243,13 @@ class _WelfareDashboardScreenState extends State<WelfareDashboardScreen> with Si
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Officer ${esc.pseudoId}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    Expanded(
+                      child: Text(
+                        'Officer ${esc.pseudoId}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Chip(
                       label: Text(
                         esc.status.name.toUpperCase(),

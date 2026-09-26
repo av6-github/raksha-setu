@@ -28,6 +28,9 @@ abstract class ICounsellorRepository {
     required String reasonCode,
     required String justification,
   });
+  Future<List<Map<String, dynamic>>> getOfficerAssessments();
+  Future<List<Map<String, dynamic>>> getEmergencyAlerts();
+  Future<void> acknowledgeCrisisAlert(String alertId);
 }
 
 class CounsellorRepository implements ICounsellorRepository {
@@ -117,18 +120,44 @@ class CounsellorRepository implements ICounsellorRepository {
               units (name)
             )
           ''')
-          .inFilter('severity_tier', ['mild', 'moderate', 'severe', 'crisis'])
-          .order('completed_at', ascending: false);
+          .order('completed_at', ascending: false)
+          .limit(60);
 
       final assessments = res as List;
-      final Map<String, ClinicalCase> caseMap = {};
+      final Map<String, List<Map<String, dynamic>>> officerAssessments = {};
 
       for (final a in assessments) {
         final officerId = a['officer_id'] as String;
-        if (caseMap.containsKey(officerId)) continue;
+        officerAssessments.putIfAbsent(officerId, () => []).add(a as Map<String, dynamic>);
+      }
 
-        final officer = a['officers'] as Map<String, dynamic>?;
+      final Map<String, ClinicalCase> caseMap = {};
+
+      for (final entry in officerAssessments.entries) {
+        final officerId = entry.key;
+        final records = entry.value;
+
+        // Keep officers with non-normal or flagged assessments
+        final hasElevated = records.any((r) {
+          final tier = r['severity_tier'] as String? ?? 'normal';
+          final crisis = r['is_crisis_flagged'] as bool? ?? false;
+          return tier != 'normal' || crisis;
+        });
+
+        if (!hasElevated) continue;
+
+        // Find most recent PHQ-9 and GAD-7 records
+        final phqRecord = records.where((r) => r['assessment_type'] == 'phq9').firstOrNull;
+        final gadRecord = records.where((r) => r['assessment_type'] == 'gad7').firstOrNull;
+
+        final primary = phqRecord ?? gadRecord ?? records.first;
+        final officer = primary['officers'] as Map<String, dynamic>?;
         final unit = officer?['units'] as Map<String, dynamic>?;
+
+        final phqScore = (phqRecord?['total_score'] as num?)?.toInt() ?? 0;
+        final gadScore = (gadRecord?['total_score'] as num?)?.toInt() ?? 0;
+        final isCrisis = (phqRecord?['is_crisis_flagged'] == true) || (gadRecord?['is_crisis_flagged'] == true);
+        final item9 = (phqRecord?['phq9_item9_score'] as num?)?.toInt() ?? 0;
 
         List<String> notes = [];
         try {
@@ -164,27 +193,22 @@ class CounsellorRepository implements ICounsellorRepository {
             : 'Officer ${officerId.substring(0, 8)}';
 
         caseMap[officerId] = ClinicalCase(
-          caseId: a['id'] as String,
+          caseId: primary['id'] as String,
           officerId: officerId,
           officerDisplayName: displayName,
           rank: officer?['designation'] as String? ?? 'Personnel',
           unit: (unit?['name'] as String?) ?? 'CRPF Unit',
-          activeConcern: _deriveConcern(
-            a['assessment_type'] as String,
-            (a['total_score'] as num).toDouble(),
-            a['severity_tier'] as String,
+          activeConcern: _deriveCombinedConcern(
+            phqScore: phqScore,
+            phqTier: phqRecord?['severity_tier'] as String? ?? 'normal',
+            gadScore: gadScore,
+            gadTier: gadRecord?['severity_tier'] as String? ?? 'normal',
           ),
-          lastPhq9Score: a['assessment_type'] == 'phq9'
-              ? (a['total_score'] as num).toInt()
-              : 0,
-          lastGad7Score: a['assessment_type'] == 'gad7'
-              ? (a['total_score'] as num).toInt()
-              : 0,
-          cssrsSeverity: a['phq9_item9_score'] != null && (a['phq9_item9_score'] as int) > 0
-              ? 'mild'
-              : 'none',
-          hasActiveSafetyPlan: a['is_crisis_flagged'] as bool? ?? false,
-          status: a['is_crisis_flagged'] == true ? 'crisis' : 'active',
+          lastPhq9Score: phqScore,
+          lastGad7Score: gadScore,
+          cssrsSeverity: item9 > 0 ? 'mild' : 'none',
+          hasActiveSafetyPlan: isCrisis,
+          status: isCrisis ? 'crisis' : 'active',
           nextSessionDate: nextSession ?? DateTime.now().add(const Duration(days: 7)),
           clinicalNotes: notes.isNotEmpty
               ? notes
@@ -205,17 +229,31 @@ class CounsellorRepository implements ICounsellorRepository {
     return List.unmodifiable(_cachedCases);
   }
 
-  String _deriveConcern(String type, double score, String tier) {
-    if (type == 'phq9') {
-      if (tier == 'crisis') return 'Crisis-level depressive symptoms requiring immediate clinical attention';
-      if (tier == 'severe') return 'Severe depression (PHQ-9: ${score.toInt()}) — urgent counselling indicated';
-      if (tier == 'moderate') return 'Moderate depression (PHQ-9: ${score.toInt()}) — regular counselling and monitoring';
-      return 'Mild depressive symptoms (PHQ-9: ${score.toInt()}) — wellness support recommended';
+  String _deriveCombinedConcern({
+    required int phqScore,
+    required String phqTier,
+    required int gadScore,
+    required String gadTier,
+  }) {
+    if (phqTier == 'crisis' || gadTier == 'crisis') {
+      return 'Crisis-level psychological symptoms requiring immediate clinical intervention';
     }
-    if (type == 'gad7') {
-      return 'Generalised anxiety (GAD-7: ${score.toInt()}) — $tier severity, counselling recommended';
+    if (phqTier == 'severe' || gadTier == 'severe') {
+      return 'Severe psychological distress (PHQ-9: $phqScore, GAD-7: $gadScore) — urgent clinical care';
     }
-    return 'Elevated psychological risk — clinical review recommended';
+    if (phqTier == 'moderate' && gadTier == 'moderate') {
+      return 'Co-morbid moderate depression & anxiety (PHQ-9: $phqScore, GAD-7: $gadScore)';
+    }
+    if (phqTier == 'moderate') {
+      return 'Moderate depression (PHQ-9: $phqScore, GAD-7: $gadScore) — regular CBT and monitoring';
+    }
+    if (gadTier == 'moderate') {
+      return 'Generalised anxiety (GAD-7: $gadScore, PHQ-9: $phqScore) — relaxation & grounding indicated';
+    }
+    if (phqTier == 'mild' || gadTier == 'mild') {
+      return 'Mild stress symptoms (PHQ-9: $phqScore, GAD-7: $gadScore) — wellness support recommended';
+    }
+    return 'Routine psychological monitoring (PHQ-9: $phqScore, GAD-7: $gadScore)';
   }
 
   @override
@@ -410,5 +448,204 @@ class CounsellorRepository implements ICounsellorRepository {
       reasonCode: reasonCode,
       clinicalJustification: justification,
     );
+  }
+
+  final List<Map<String, dynamic>> _mockAssessments = [
+    {
+      'id': 'asm-seed-003',
+      'officer_name': 'Inspector Arjun Thakur',
+      'service_number': 'BSF-2018-9932',
+      'unit': '45 Battalion BSF (Alpha Co)',
+      'assessment_type': 'PHQ-9 Depression Inventory',
+      'total_score': 14,
+      'max_score': 27,
+      'severity_tier': 'moderate',
+      'phq9_item9_score': 0,
+      'is_crisis_flagged': false,
+      'completed_at': DateTime.now().subtract(const Duration(hours: 4)).toIso8601String(),
+    },
+    {
+      'id': 'asm-seed-001',
+      'officer_name': 'Subedar Vikram Singh',
+      'service_number': 'CRPF-2026-7788',
+      'unit': '12 Battalion CRPF (Charlie Co)',
+      'assessment_type': 'PHQ-9 Depression Inventory',
+      'total_score': 8,
+      'max_score': 27,
+      'severity_tier': 'mild',
+      'phq9_item9_score': 0,
+      'is_crisis_flagged': false,
+      'completed_at': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+    },
+    {
+      'id': 'asm-seed-002',
+      'officer_name': 'Head Constable Priya Nair',
+      'service_number': 'CRPF-2022-4421',
+      'unit': '12 Battalion CRPF (Charlie Co)',
+      'assessment_type': 'PHQ-9 Depression Inventory',
+      'total_score': 3,
+      'max_score': 27,
+      'severity_tier': 'normal',
+      'phq9_item9_score': 0,
+      'is_crisis_flagged': false,
+      'completed_at': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
+    },
+  ];
+
+  final List<Map<String, dynamic>> _mockEmergencyAlerts = [
+    {
+      'id': 'crs-mock-001',
+      'officer_name': 'Inspector Arjun Thakur',
+      'service_number': 'BSF-2018-9932',
+      'unit': '45 BN BSF',
+      'trigger_source': 'Automated Wearable CUSUM Spike & Duty Stress',
+      'severity': 'high',
+      'status': 'escalated',
+      'triggered_at': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+    },
+  ];
+
+  @override
+  Future<List<Map<String, dynamic>>> getOfficerAssessments() async {
+    RbacGuard.assertAccess(
+      role: UserRole.counsellor,
+      resource: ResourceType.clinicalAssessmentDetail,
+    );
+
+    if (client != null) {
+      try {
+        final res = await client!
+            .from('assessments')
+            .select('''
+              id,
+              officer_id,
+              assessment_type,
+              total_score,
+              severity_tier,
+              phq9_item9_score,
+              is_crisis_flagged,
+              completed_at,
+              officers (
+                id,
+                first_name,
+                last_name,
+                designation,
+                service_number,
+                units (name)
+              )
+            ''')
+            .order('completed_at', ascending: false)
+            .limit(30);
+
+        final list = res as List;
+        if (list.isNotEmpty) {
+          return list.map((a) {
+            final officer = a['officers'] as Map<String, dynamic>?;
+            final unit = officer?['units'] as Map<String, dynamic>?;
+            final isPhq = a['assessment_type'] == 'phq9';
+
+            return {
+              'id': a['id']?.toString() ?? '',
+              'officer_name': officer != null
+                  ? '${officer['designation'] ?? 'Officer'} ${officer['first_name']} ${officer['last_name'] ?? ''}'
+                  : 'Officer ${a['officer_id']?.toString().substring(0, 8)}',
+              'service_number': officer?['service_number']?.toString() ?? '—',
+              'unit': unit?['name']?.toString() ?? 'CRPF Sector',
+              'assessment_type': isPhq ? 'PHQ-9 Depression Inventory' : 'GAD-7 Anxiety Screening',
+              'total_score': (a['total_score'] as num?)?.toInt() ?? 0,
+              'max_score': isPhq ? 27 : 21,
+              'severity_tier': a['severity_tier']?.toString() ?? 'mild',
+              'phq9_item9_score': (a['phq9_item9_score'] as num?)?.toInt() ?? 0,
+              'is_crisis_flagged': a['is_crisis_flagged'] as bool? ?? false,
+              'completed_at': a['completed_at']?.toString() ?? DateTime.now().toIso8601String(),
+            };
+          }).toList();
+        }
+      } catch (e) {
+        AppLogger.warning('Failed to fetch officer assessments from Supabase', error: e);
+      }
+    }
+
+    return List.unmodifiable(_mockAssessments);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getEmergencyAlerts() async {
+    RbacGuard.assertAccess(
+      role: UserRole.counsellor,
+      resource: ResourceType.clinicalAssessmentDetail,
+    );
+
+    if (client != null) {
+      try {
+        final res = await client!
+            .from('crisis_events')
+            .select('''
+              id,
+              officer_id,
+              trigger_source,
+              status,
+              desk_routed,
+              triggered_at,
+              officers (
+                first_name,
+                last_name,
+                designation,
+                service_number,
+                units (name)
+              )
+            ''')
+            .order('triggered_at', ascending: false)
+            .limit(20);
+
+        final list = res as List;
+        if (list.isNotEmpty) {
+          return list.map((c) {
+            final officer = c['officers'] as Map<String, dynamic>?;
+            final unit = officer?['units'] as Map<String, dynamic>?;
+            final trigger = c['trigger_source']?.toString() ?? 'Direct SOS Alert';
+
+            return {
+              'id': c['id']?.toString() ?? '',
+              'officer_name': officer != null
+                  ? '${officer['designation'] ?? 'Officer'} ${officer['first_name']} ${officer['last_name'] ?? ''}'
+                  : 'Officer ${c['officer_id']?.toString().substring(0, 8)}',
+              'service_number': officer?['service_number']?.toString() ?? '—',
+              'unit': unit?['name']?.toString() ?? 'Unit Forward Base',
+              'trigger_source': trigger,
+              'severity': trigger.contains('phq9') || trigger.contains('sos') ? 'imminent' : 'high',
+              'status': c['status']?.toString() ?? 'escalated',
+              'triggered_at': c['triggered_at']?.toString() ?? DateTime.now().toIso8601String(),
+            };
+          }).toList();
+        }
+      } catch (e) {
+        AppLogger.warning('Failed to fetch emergency alerts from Supabase', error: e);
+      }
+    }
+
+    return List.unmodifiable(_mockEmergencyAlerts);
+  }
+
+  @override
+  Future<void> acknowledgeCrisisAlert(String alertId) async {
+    if (client != null) {
+      try {
+        await client!
+            .from('crisis_events')
+            .update({
+              'status': 'attending_by_counsellor',
+            })
+            .eq('id', alertId);
+      } catch (e) {
+        AppLogger.warning('Failed to acknowledge crisis alert on Supabase', error: e);
+      }
+    }
+
+    for (final a in _mockEmergencyAlerts) {
+      if (a['id'] == alertId) {
+        a['status'] = 'attending_by_counsellor';
+      }
+    }
   }
 }

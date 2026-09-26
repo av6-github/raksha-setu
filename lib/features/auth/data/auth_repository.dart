@@ -126,15 +126,50 @@ class AuthRepository implements IAuthRepository {
           .eq('identity_id', identityRes?['id'] ?? '')
           .maybeSingle();
 
+      String? officerId = officerRes?['id'] as String?;
+      String? serviceNumber = officerRes?['service_number'] as String?;
+      String? firstName = officerRes?['first_name'] as String?;
+      String? lastName = officerRes?['last_name'] as String?;
+      String? familyMemberId;
+
+      if (role == UserRole.family && identityRes != null) {
+        try {
+          final famRes = await client!
+              .from('family_members')
+              .select('id, officer_id, first_name, last_name, relation')
+              .eq('identity_id', identityRes['id'])
+              .maybeSingle();
+          if (famRes != null) {
+            familyMemberId = famRes['id'] as String?;
+            officerId = famRes['officer_id'] as String?;
+            firstName = famRes['first_name'] as String?;
+            lastName = famRes['last_name'] as String?;
+            serviceNumber = 'FAM-${(famRes['relation'] as String? ?? 'SPOUSE').toUpperCase()}';
+          }
+        } catch (_) {}
+      } else if (role == UserRole.commander) {
+        firstName ??= 'Col. Rajesh';
+        lastName ??= 'Sharma';
+        serviceNumber ??= 'CRPF-CMD-001';
+      } else if (role == UserRole.counsellor) {
+        firstName ??= 'Dr. Ananya';
+        lastName ??= 'Iyer';
+        serviceNumber ??= 'MED-PSY-102';
+      } else if (role == UserRole.welfareOfficer) {
+        firstName ??= 'Insp. Manoj';
+        lastName ??= 'Kumar';
+        serviceNumber ??= 'WLF-DIR-007';
+      }
 
       return AppUser(
         id: authUserId,
         email: email,
         role: role,
-        officerId: officerRes?['id'] as String?,
-        serviceNumber: officerRes?['service_number'] as String?,
-        firstName: officerRes?['first_name'] as String?,
-        lastName: officerRes?['last_name'] as String?,
+        officerId: officerId,
+        serviceNumber: serviceNumber,
+        firstName: firstName,
+        lastName: lastName,
+        familyMemberId: familyMemberId,
       );
     } catch (e) {
       AppLogger.warning('Failed to resolve full user profile from database; using base', error: e);

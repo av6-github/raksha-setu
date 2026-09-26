@@ -1,5 +1,5 @@
 // lib/features/hrms/presentation/hrms_view_model.dart
-// State management for organizational signals and read-only HRMS data
+// State management for organizational signals, HRMS postings, and dynamic leave submission
 
 import 'package:flutter/foundation.dart';
 import '../data/hrms_repository.dart';
@@ -45,6 +45,36 @@ class HrmsViewModel extends ChangeNotifier {
       _signal = await repository.getOrganisationalSignal(officerId);
     } catch (e) {
       _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> applyLeave({
+    required String leaveType,
+    required DateTime startDate,
+    required DateTime endDate,
+    String? reason,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final newRecord = await repository.applyForLeave(
+        officerId: officerId,
+        leaveType: leaveType,
+        startDate: startDate,
+        endDate: endDate,
+        reason: reason,
+      );
+      _leaves = [newRecord, ..._leaves.where((l) => l.id != newRecord.id)];
+      _signal = await repository.getOrganisationalSignal(officerId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();

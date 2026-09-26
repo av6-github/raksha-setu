@@ -86,14 +86,28 @@ class AnonymousReportRepository implements IAnonymousReportRepository {
     final c = client;
     if (c != null) {
       try {
-        await c.from('anonymous_reports').insert(newReport.toJson());
-        return plaintextToken;
-      } catch (_) {
-        // Fallback to mock
+        final insertData = <String, dynamic>{
+          'tracking_token_hash': tokenHash,
+          'category': category.code,
+          'report_text_encrypted': reportText,
+          'evidence_urls': evidenceUrls,
+          'unit_identifier_general': sanitizedUnit ?? '12 Battalion CRPF (Charlie Company)',
+          'status': 'submitted',
+          'submitted_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        };
+        final inserted = await c.from('anonymous_reports').insert(insertData).select().maybeSingle();
+        if (inserted != null) {
+          final liveReport = AnonymousReport.fromJson(inserted);
+          _mockReports.insert(0, liveReport);
+          return plaintextToken;
+        }
+      } catch (e) {
+        // Log and fallback to mock
       }
     }
 
-    _mockReports.add(newReport);
+    _mockReports.insert(0, newReport);
     return plaintextToken;
   }
 

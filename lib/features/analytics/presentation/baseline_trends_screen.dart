@@ -118,11 +118,14 @@ class BaselineTrendsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'CUSUM Change-Point Alerts',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            'CUSUM Change-Point Alerts',
+                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        if (deviations.isNotEmpty)
+                        if (deviations.isNotEmpty) ...[
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
@@ -134,6 +137,7 @@ class BaselineTrendsScreen extends StatelessWidget {
                               style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange.shade900),
                             ),
                           ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 8),

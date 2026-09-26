@@ -94,16 +94,16 @@ class AuthViewModel extends ChangeNotifier {
         lastName = 'Thakur';
         serviceNumber = 'BSF-2018-9932';
       } else if (role == UserRole.commander) {
-        firstName = 'Devendra';
-        lastName = 'Rathore';
+        firstName = 'Col. Rajesh';
+        lastName = 'Sharma';
         serviceNumber = 'CRPF-CMD-001';
       } else if (role == UserRole.counsellor) {
-        firstName = 'Dr. Sunita';
-        lastName = 'Deshmukh';
+        firstName = 'Dr. Ananya';
+        lastName = 'Iyer';
         serviceNumber = 'MED-PSY-102';
       } else if (role == UserRole.welfareOfficer) {
-        firstName = 'Rajesh';
-        lastName = 'Kapoor';
+        firstName = 'Insp. Manoj';
+        lastName = 'Kumar';
         serviceNumber = 'WLF-DIR-007';
       } else if (role == UserRole.family) {
         firstName = 'Meera';

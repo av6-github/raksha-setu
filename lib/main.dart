@@ -22,6 +22,7 @@ import 'features/auth/presentation/auth_view_model.dart';
 import 'features/profile/data/profile_repository.dart';
 import 'features/consent/data/consent_repository.dart';
 import 'features/security/data/app_lock_service.dart';
+import 'features/security/presentation/app_lock_gate.dart';
 import 'features/access_log/data/access_log_repository.dart';
 import 'features/data_retention/data/data_retention_repository.dart';
 import 'features/checkins/data/check_in_repository.dart';
@@ -123,10 +124,13 @@ void main() async {
   final crisisRepository = CrisisRepository(client: supabaseClient);
   final welfareRepository = WelfareRepository(client: supabaseClient);
   final counsellorRepository = CounsellorRepository(client: supabaseClient);
-  final commanderRepository = CommanderRepository(client: supabaseClient);
+  final anonymousReportRepository = AnonymousReportRepository(client: supabaseClient);
+  final commanderRepository = CommanderRepository(
+    client: supabaseClient,
+    anonymousReportRepo: anonymousReportRepository,
+  );
   final familyRepository = FamilyRepository(client: supabaseClient);
   final teamSessionRepository = TeamSessionRepository(client: supabaseClient);
-  final anonymousReportRepository = AnonymousReportRepository(client: supabaseClient);
   final performanceRepository = PerformanceRepository(client: supabaseClient);
   final welfareRagRepository = WelfareRagRepository(client: supabaseClient);
   final bulletinRecognitionRepository = BulletinRecognitionRepository(client: supabaseClient);
@@ -194,6 +198,8 @@ class RakshaWelfareApp extends StatelessWidget {
     final authViewModel = context.watch<AuthViewModel>();
     final router = AppRouter.createRouter(authViewModel);
 
+    final appLockService = Provider.of<IAppLockService?>(context, listen: false);
+
     return MaterialApp.router(
       title: 'Raksha Welfare',
       debugShowCheckedModeBanner: false,
@@ -219,6 +225,15 @@ class RakshaWelfareApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) {
+        if (appLockService == null) {
+          return child ?? const SizedBox.shrink();
+        }
+        return AppLockGate(
+          appLockService: appLockService,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       routerConfig: router,
     );
   }

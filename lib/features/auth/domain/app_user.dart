@@ -12,6 +12,7 @@ class AppUser {
   final String? serviceNumber;
   final String? firstName;
   final String? lastName;
+  final String? familyMemberId;
 
   const AppUser({
     required this.id,
@@ -22,6 +23,7 @@ class AppUser {
     this.serviceNumber,
     this.firstName,
     this.lastName,
+    this.familyMemberId,
   });
 
   String get displayName {

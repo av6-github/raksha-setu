@@ -4,6 +4,7 @@
 
 import 'package:supabase_flutter/supabase_flutter.dart' as sp;
 import '../../../core/logging/app_logger.dart';
+import '../../anonymous_reporting/data/anonymous_report_repository.dart';
 import '../../auth/domain/user_role.dart';
 import '../../../core/security/rbac_guard.dart';
 import '../domain/unit_operational_metrics.dart';
@@ -15,10 +16,13 @@ abstract class ICommanderRepository {
   Future<void> acknowledgeRecommendation(String recommendationId);
   Future<Map<String, String>> getOperationalAvailabilityRoster(String unitCode);
   Future<void> attemptForbiddenClinicalInspection(String officerId);
+  Future<List<Map<String, dynamic>>> getUnitReports(String unitCode);
+  Future<void> acknowledgeReport(String reportId);
 }
 
 class CommanderRepository implements ICommanderRepository {
   final sp.SupabaseClient? client;
+  final IAnonymousReportRepository? anonymousReportRepo;
 
   final Map<String, UnitOperationalMetrics> _mockMetrics = {
     '12-BN-CHARLIE': const UnitOperationalMetrics(
@@ -79,7 +83,10 @@ class CommanderRepository implements ICommanderRepository {
 
   final Map<String, bool> _acknowledgedRecs = {};
 
-  CommanderRepository({this.client});
+  CommanderRepository({
+    this.client,
+    this.anonymousReportRepo,
+  });
 
   @override
   Future<UnitOperationalMetrics> getUnitMetrics(String unitCode) async {
@@ -95,10 +102,11 @@ class CommanderRepository implements ICommanderRepository {
 
     if (client != null) {
       try {
+        final searchWord = unitCode.contains('CHARLIE') ? 'Charlie' : unitCode.replaceAll('-', ' ');
         final unitRes = await client!
             .from('units')
             .select('id, name, is_high_hardship')
-            .ilike('name', '%${unitCode.replaceAll('-', ' ')}%')
+            .ilike('name', '%$searchWord%')
             .maybeSingle();
 
         final unitId = unitRes?['id'] as String?;
@@ -250,10 +258,11 @@ class CommanderRepository implements ICommanderRepository {
 
     if (client != null) {
       try {
+        final searchWord = unitCode.contains('CHARLIE') ? 'Charlie' : unitCode.replaceAll('-', ' ');
         final unitRes = await client!
             .from('units')
             .select('id')
-            .ilike('name', '%${unitCode.replaceAll('-', ' ')}%')
+            .ilike('name', '%$searchWord%')
             .maybeSingle();
 
         final unitId = unitRes?['id'] as String?;
@@ -285,6 +294,106 @@ class CommanderRepository implements ICommanderRepository {
     }
 
     return Map.unmodifiable(_mockAvailabilityRoster);
+  }
+
+  final List<Map<String, dynamic>> _mockUnitReports = [
+    {
+      'id': 'rep-unit-001',
+      'category': 'Equipment & Living Deficiencies',
+      'report_text': 'Extreme cold weather clothing and sub-zero thermal boots are deficient for Charlie Co post rotation.',
+      'unit': '12-BN-CHARLIE',
+      'status': 'submitted',
+      'submitted_at': DateTime.now().subtract(const Duration(hours: 18)).toIso8601String(),
+    },
+    {
+      'id': 'rep-unit-002',
+      'category': 'Duty Roster Friction',
+      'report_text': 'Perimeter patrol team has logged 14 consecutive nights without scheduled 48h rest rotation.',
+      'unit': '12-BN-CHARLIE',
+      'status': 'under_review',
+      'submitted_at': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
+    },
+  ];
+
+  @override
+  Future<List<Map<String, dynamic>>> getUnitReports(String unitCode) async {
+    RbacGuard.assertAccess(
+      role: UserRole.commander,
+      resource: ResourceType.commanderUnitAggregates,
+    );
+
+    if (client != null) {
+      try {
+        final res = await client!
+            .from('anonymous_reports')
+            .select()
+            .order('submitted_at', ascending: false)
+            .limit(20);
+        final list = res as List;
+        if (list.isNotEmpty) {
+          return list.map((r) => {
+            'id': r['id']?.toString() ?? '',
+            'category': r['category']?.toString() ?? 'Welfare & Operations',
+            'report_text': r['report_text_encrypted']?.toString() ?? 'Report logged',
+            'unit': r['unit_identifier_general']?.toString() ?? unitCode,
+            'status': r['status']?.toString() ?? 'submitted',
+            'submitted_at': r['submitted_at']?.toString() ?? DateTime.now().toIso8601String(),
+            'response_notes': r['response_notes_encrypted']?.toString(),
+          }).toList();
+        }
+      } catch (e) {
+        AppLogger.warning('Failed to fetch unit reports from Supabase', error: e);
+      }
+    }
+
+    if (anonymousReportRepo != null) {
+      try {
+        final vigReports = await anonymousReportRepo!.getVigilancePipelineReports();
+        if (vigReports.isNotEmpty) {
+          return vigReports.map((r) => {
+            'id': r.id,
+            'category': r.category.displayName,
+            'report_text': r.reportTextEncrypted,
+            'unit': r.unitIdentifierGeneral ?? unitCode,
+            'status': r.status,
+            'submitted_at': r.submittedAt.toIso8601String(),
+            'response_notes': r.responseNotesEncrypted,
+          }).toList();
+        }
+      } catch (_) {}
+    }
+
+    return List.unmodifiable(_mockUnitReports);
+  }
+
+  @override
+  Future<void> acknowledgeReport(String reportId) async {
+    if (client != null) {
+      try {
+        await client!
+            .from('anonymous_reports')
+            .update({
+              'status': 'action_taken',
+              'updated_at': DateTime.now().toIso8601String(),
+            })
+            .eq('id', reportId);
+      } catch (e) {
+        AppLogger.warning('Failed to update report status on Supabase', error: e);
+      }
+    }
+    if (anonymousReportRepo != null) {
+      try {
+        await anonymousReportRepo!.updateReportStatus(
+          reportId: reportId,
+          status: 'action_taken',
+        );
+      } catch (_) {}
+    }
+    for (final r in _mockUnitReports) {
+      if (r['id'] == reportId) {
+        r['status'] = 'action_taken';
+      }
+    }
   }
 
   @override

@@ -130,5 +130,24 @@ void main() {
       expect(vm.dutyRecords, isNotEmpty);
       expect(vm.errorMessage, isNull);
     });
+
+    test('HrmsViewModel applyLeave successfully adds new leave record', () async {
+      final vm = HrmsViewModel(repository: repository, officerId: testOfficerId);
+      await vm.loadData();
+      final initialCount = vm.leaves.length;
+
+      final result = await vm.applyLeave(
+        leaveType: 'Casual Leave (CL)',
+        startDate: DateTime.now().add(const Duration(days: 2)),
+        endDate: DateTime.now().add(const Duration(days: 6)),
+        reason: 'Family welfare visit',
+      );
+
+      expect(result, isTrue);
+      expect(vm.leaves.length, equals(initialCount + 1));
+      expect(vm.leaves.first.leaveType, equals('Casual Leave (CL)'));
+      expect(vm.leaves.first.status, equals('applied'));
+      expect(vm.leaves.first.durationDays, equals(5));
+    });
   });
 }

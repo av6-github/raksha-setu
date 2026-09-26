@@ -97,6 +97,22 @@ import '../../features/expansion/presentation/expansion_screen.dart';
 import '../../features/expansion/presentation/expansion_view_model.dart';
 
 class AppRouter {
+  static String _homeRouteForRole(UserRole role) {
+    switch (role) {
+      case UserRole.counsellor:
+        return '/counsellor';
+      case UserRole.welfareOfficer:
+        return '/welfare';
+      case UserRole.commander:
+        return '/commander';
+      case UserRole.family:
+        return '/family';
+      case UserRole.officer:
+      default:
+        return '/dashboard';
+    }
+  }
+
   static GoRouter createRouter(AuthViewModel authViewModel) {
     return GoRouter(
       initialLocation: '/dashboard',
@@ -109,23 +125,21 @@ class AppRouter {
         // Crisis route is always unblocked regardless of auth state
         if (isCrisis) return null;
 
-        if (!isAuthenticated && !isLoggingIn) {
-          return '/login';
+        if (!isAuthenticated) {
+          return isLoggingIn ? null : '/login';
         }
 
-        if (isAuthenticated && isLoggingIn) {
-          switch (authViewModel.currentRole) {
-            case UserRole.counsellor:
-              return '/counsellor';
-            case UserRole.welfareOfficer:
-              return '/welfare';
-            case UserRole.commander:
-              return '/commander';
-            case UserRole.family:
-              return '/family';
-            default:
-              return '/dashboard';
-          }
+        final role = authViewModel.currentRole;
+        final home = _homeRouteForRole(role);
+
+        // If authenticated and visiting login or root, go to role-specific home
+        if (isLoggingIn || state.matchedLocation == '/') {
+          return home;
+        }
+
+        // If non-officer visits officer dashboard, route to their dedicated dashboard
+        if (state.matchedLocation == '/dashboard' && role != UserRole.officer) {
+          return home;
         }
 
         return null;
@@ -299,9 +313,19 @@ class AppRouter {
           path: '/family',
           builder: (context, state) {
             final repo = context.read<IFamilyRepository>();
-            final officerId = authViewModel.currentUser?.officerId ?? 'mock-officer-uuid-001';
+            final user = authViewModel.currentUser;
+            final officerId = user?.officerId ?? '3790a74c-61c7-4e69-9448-eac79eeac022';
+            final familyMemberId = user?.familyMemberId ?? 'c8b7e27c-bb27-4dc2-b604-a74b57cdaa4d';
+            final familyMemberName = (user?.displayName.isNotEmpty ?? false)
+                ? '${user!.displayName} (Spouse)'
+                : 'Meera Singh (Spouse)';
             return FamilyDashboardScreen(
-              viewModel: FamilyViewModel(repository: repo, officerId: officerId),
+              viewModel: FamilyViewModel(
+                repository: repo,
+                officerId: officerId,
+                currentFamilyMemberId: familyMemberId,
+                currentFamilyMemberName: familyMemberName,
+              ),
             );
           },
         ),
@@ -309,7 +333,7 @@ class AppRouter {
           path: '/morale-vault',
           builder: (context, state) {
             final repo = context.read<IFamilyRepository>();
-            final officerId = authViewModel.currentUser?.officerId ?? 'mock-officer-uuid-001';
+            final officerId = authViewModel.currentUser?.officerId ?? '3790a74c-61c7-4e69-9448-eac79eeac022';
             return MoraleVaultScreen(
               repository: repo,
               officerId: officerId,

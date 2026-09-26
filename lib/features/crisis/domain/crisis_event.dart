@@ -63,4 +63,14 @@ class CrisisEvent {
       'safety_plan_created': safetyPlanCreated,
     };
   }
+
+  Map<String, dynamic> toDbPayload() {
+    return {
+      'officer_id': officerId,
+      'trigger_source': triggerSource,
+      'status': status,
+      'desk_routed': 'force_tele_counselling',
+      'triggered_at': triggeredAt.toIso8601String(),
+    };
+  }
 }

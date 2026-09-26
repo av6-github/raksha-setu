@@ -40,7 +40,26 @@ class _LoginScreenState extends State<LoginScreen> {
       _passwordController.text,
     );
 
-    if (!success && mounted) {
+    if (success && mounted) {
+      switch (authVm.currentRole) {
+        case UserRole.commander:
+          context.go('/commander');
+          break;
+        case UserRole.counsellor:
+          context.go('/counsellor');
+          break;
+        case UserRole.welfareOfficer:
+          context.go('/welfare');
+          break;
+        case UserRole.family:
+          context.go('/family');
+          break;
+        case UserRole.officer:
+        default:
+          context.go('/dashboard');
+          break;
+      }
+    } else if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authVm.errorMessage ?? 'Sign in failed. Please try again.'),
@@ -219,49 +238,74 @@ class _LoginScreenState extends State<LoginScreen> {
                               ActionChip(
                                 avatar: const Icon(Icons.person_rounded, size: 14),
                                 label: const Text('Officer 1 (Vikram)', style: TextStyle(fontSize: 11)),
-                                onPressed: () => authVm.signInAsDemo(
-                                  UserRole.officer,
-                                  customEmail: 'officer1@raksha.gov.in',
-                                  specificOfficerId: '3790a74c-61c7-4e69-9448-eac79eeac022',
-                                ),
+                                onPressed: () async {
+                                  await authVm.signInAsDemo(
+                                    UserRole.officer,
+                                    customEmail: 'officer1@raksha.gov.in',
+                                    specificOfficerId: '3790a74c-61c7-4e69-9448-eac79eeac022',
+                                  );
+                                  if (context.mounted) context.go('/dashboard');
+                                },
                               ),
                               ActionChip(
                                 avatar: const Icon(Icons.person_outline_rounded, size: 14),
                                 label: const Text('Officer 2 (Priya)', style: TextStyle(fontSize: 11)),
-                                onPressed: () => authVm.signInAsDemo(
-                                  UserRole.officer,
-                                  customEmail: 'officer2@raksha.gov.in',
-                                  specificOfficerId: '10ff6159-a26e-420a-9f81-f1b1ec9c39ad',
-                                ),
+                                onPressed: () async {
+                                  await authVm.signInAsDemo(
+                                    UserRole.officer,
+                                    customEmail: 'officer2@raksha.gov.in',
+                                    specificOfficerId: '10ff6159-a26e-420a-9f81-f1b1ec9c39ad',
+                                  );
+                                  if (context.mounted) context.go('/dashboard');
+                                },
                               ),
                               ActionChip(
                                 avatar: const Icon(Icons.warning_amber_rounded, size: 14, color: Colors.deepOrange),
                                 label: const Text('Officer 3 (Arjun - High Risk)', style: TextStyle(fontSize: 11)),
-                                onPressed: () => authVm.signInAsDemo(
-                                  UserRole.officer,
-                                  customEmail: 'officer3@raksha.gov.in',
-                                  specificOfficerId: '9ba7cd91-fe4b-46a6-8011-38c183c55e70',
-                                ),
+                                onPressed: () async {
+                                  await authVm.signInAsDemo(
+                                    UserRole.officer,
+                                    customEmail: 'officer3@raksha.gov.in',
+                                    specificOfficerId: '9ba7cd91-fe4b-46a6-8011-38c183c55e70',
+                                  );
+                                  if (context.mounted) context.go('/dashboard');
+                                },
                               ),
                               ActionChip(
                                 avatar: const Icon(Icons.military_tech_rounded, size: 14),
-                                label: const Text('Commander', style: TextStyle(fontSize: 11)),
-                                onPressed: () => authVm.signInAsDemo(UserRole.commander),
+                                label: const Text('Commander (Col. Rajesh Sharma)', style: TextStyle(fontSize: 11)),
+                                onPressed: () async {
+                                  await authVm.signInAsDemo(UserRole.commander);
+                                  if (context.mounted) context.go('/commander');
+                                },
                               ),
                               ActionChip(
                                 avatar: const Icon(Icons.medical_services_rounded, size: 14),
-                                label: const Text('Counsellor', style: TextStyle(fontSize: 11)),
-                                onPressed: () => authVm.signInAsDemo(UserRole.counsellor),
+                                label: const Text('Counsellor (Dr. Ananya Iyer)', style: TextStyle(fontSize: 11)),
+                                onPressed: () async {
+                                  await authVm.signInAsDemo(UserRole.counsellor);
+                                  if (context.mounted) context.go('/counsellor');
+                                },
                               ),
                               ActionChip(
                                 avatar: const Icon(Icons.volunteer_activism_rounded, size: 14),
-                                label: const Text('Welfare Officer', style: TextStyle(fontSize: 11)),
-                                onPressed: () => authVm.signInAsDemo(UserRole.welfareOfficer),
+                                label: const Text('Welfare Officer (Insp. Manoj Kumar)', style: TextStyle(fontSize: 11)),
+                                onPressed: () async {
+                                  await authVm.signInAsDemo(UserRole.welfareOfficer);
+                                  if (context.mounted) context.go('/welfare');
+                                },
                               ),
                               ActionChip(
                                 avatar: const Icon(Icons.family_restroom_rounded, size: 14),
-                                label: const Text('Family', style: TextStyle(fontSize: 11)),
-                                onPressed: () => authVm.signInAsDemo(UserRole.family),
+                                label: const Text('Family (Meera - Spouse)', style: TextStyle(fontSize: 11)),
+                                onPressed: () async {
+                                  await authVm.signInAsDemo(
+                                    UserRole.family,
+                                    customEmail: 'family1@raksha.gov.in',
+                                    specificOfficerId: '3790a74c-61c7-4e69-9448-eac79eeac022',
+                                  );
+                                  if (context.mounted) context.go('/family');
+                                },
                               ),
                             ],
                           ),
