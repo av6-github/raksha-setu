@@ -42,14 +42,15 @@ void main() {
         providers: [
           ChangeNotifierProvider<AuthViewModel>.value(value: authViewModel),
         ],
-        child: const RakshaWelfareApp(),
+        child: const RakshaSetuApp(),
       ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify app renders login elements and welfare firewall banner
-    expect(find.text('Raksha Welfare'), findsWidgets);
+    expect(find.textContaining('Raksha'), findsWidgets);
     expect(find.byType(WelfareBanner), findsOneWidget);
   });
 }

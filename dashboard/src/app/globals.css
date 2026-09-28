@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #FAF8F2;
+  --foreground: #0A1F2C;
+}
+
+/* Arctic Frost - Aura */
+/* Base color on BODY - blend modes composite against this */
+body {
+  background-color: #faf8f2;
+  color: #0A1F2C;
+  font-family: 'Public Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.aura-bg {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh; /* height must be explicit - absolute layers add none */
+  /* NO background-color - layers blend against body */
+}
+
+/* Layer 1 - normal */
+.aura-layer-1 {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(207,250,254,0.9) 0%, rgba(165,243,252,0.4) 50%, rgba(34,211,238,0.3) 100%);
+  mix-blend-mode: normal;
+  transform: translateZ(0);
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Layer 2 - multiply */
+.aura-layer-2 {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(81, 220, 245, 0.5) 0%, transparent 40%);
+  mix-blend-mode: multiply;
+  filter: blur(125px); /* use 180px on desktop */
+  opacity: 0.84;
+  transform: translateZ(0);
+  will-change: transform;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .aura-layer-2 {
+    filter: blur(180px);
+  }
+}
+
+/* Layer 3 - multiply */
+.aura-layer-3 {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 70%, rgba(81, 183, 230, 0.4) 0%, transparent 35%);
+  mix-blend-mode: multiply;
+  filter: blur(150px); /* use 216px on desktop */
+  opacity: 0.62;
+  transform: translateZ(0);
+  will-change: transform;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .aura-layer-3 {
+    filter: blur(216px);
+  }
+}
+
+/* Layer 4 - multiply */
+.aura-layer-4 {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.4) 100%);
+  mix-blend-mode: multiply;
+  filter: blur(50px); /* use 72px on desktop */
+  transform: translateZ(0);
+  will-change: transform;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .aura-layer-4 {
+    filter: blur(72px);
+  }
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+/* Luxury Glassmorphism Utilities */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 20px -2px rgba(12, 35, 64, 0.05), 0 2px 6px -1px rgba(6, 182, 212, 0.08);
+}
+
+.liquid-glass-subtle {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.liquid-glass-glow {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.25), 0 8px 16px -4px rgba(12, 35, 64, 0.08);
+}

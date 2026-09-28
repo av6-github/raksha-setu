@@ -1,8 +1,13 @@
 // lib/features/checkins/presentation/check_in_screen.dart
 // PHQ-2, GAD-2, sleep, workload biweekly check-in wizard with offline-first support
+// Styled with Arctic Frost glassmorphism, RakshaSetuScaffold, and overflow-free scrolling
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/rakshasetu_theme.dart';
+import '../../../shared/widgets/liquid_glass_card.dart';
+import '../../../shared/widgets/rakshasetu_scaffold.dart';
+import '../../../shared/widgets/kinetic_dots_loader.dart';
 import 'check_in_view_model.dart';
 
 class CheckInScreen extends StatelessWidget {
@@ -17,13 +22,11 @@ class CheckInScreen extends StatelessWidget {
       builder: (context, _) {
         return PopScope(
           canPop: viewModel.step == CheckInStep.intro || viewModel.step == CheckInStep.done,
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Wellness Check-In'),
-              leading: (viewModel.step == CheckInStep.intro || viewModel.step == CheckInStep.done)
-                  ? null
-                  : const CloseButton(),
-            ),
+          child: RakshaSetuScaffold(
+            currentRoute: '/checkin',
+            subtitle: 'Biweekly Confidential Wellness Check-In',
+            showBackButton: true,
+            showFloatingDock: viewModel.step == CheckInStep.intro || viewModel.step == CheckInStep.done,
             body: AnimatedSwitcher(
               duration: const Duration(milliseconds: 280),
               child: _buildStep(context),
@@ -74,8 +77,8 @@ class CheckInScreen extends StatelessWidget {
       case CheckInStep.workload:
         return _ScaleStep(
           key: const ValueKey('workload'),
-          title: 'Workload',
-          question: 'How manageable has your workload been over the last two weeks?',
+          title: 'Workload & Rest Balance',
+          question: 'How manageable has your operational duty workload been over the last two weeks?',
           minLabel: 'Overwhelming',
           maxLabel: 'Manageable',
           maxValue: 5,
@@ -88,7 +91,12 @@ class CheckInScreen extends StatelessWidget {
           onSkip: viewModel.skipFreeText,
         );
       case CheckInStep.submitting:
-        return const Center(child: CircularProgressIndicator());
+        return const Center(
+          child: KineticDotsLoader(
+            size: 20,
+            label: 'Encrypting and syncing check-in...',
+          ),
+        );
       case CheckInStep.done:
         return _DoneStep(
           isElevated: viewModel.isElevated,
@@ -96,17 +104,34 @@ class CheckInScreen extends StatelessWidget {
         );
       case CheckInStep.error:
         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
-              const SizedBox(height: 16),
-              const Text('Submission failed. Check-in saved for offline sync.'),
-              const SizedBox(height: 8),
-              Text(viewModel.errorMessage ?? '', style: const TextStyle(fontSize: 12)),
-              const SizedBox(height: 16),
-              FilledButton(onPressed: () => context.pop(), child: const Text('Close')),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: LiquidGlassCard(
+              borderRadius: 20,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline_rounded, color: RakshaSetuColors.rose600, size: 44),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Saved Locally For Offline Sync',
+                    style: TextStyle(fontFamily: 'Public Sans', fontWeight: FontWeight.w700, fontSize: 14),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    viewModel.errorMessage ?? 'Network unreachable. Stored in tamper-proof offline queue.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11.5, color: RakshaSetuColors.slate600),
+                  ),
+                  const SizedBox(height: 16),
+                  ObsidianButton(
+                    label: 'Return to Dashboard',
+                    onPressed: () => context.pop(),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
     }
@@ -119,38 +144,95 @@ class _IntroStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Icon(Icons.favorite_rounded, size: 64, color: Colors.blue),
-          const SizedBox(height: 24),
-          Text(
-            'Biweekly Wellness Check-In',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'This takes about 2 minutes. Your responses are:\n\n'
-            '• Completely confidential\n'
-            '• Never shared with HR or used in ACR\n'
-            '• Protected by the Welfare-HR Firewall\n'
-            '• Stored securely and accessible only to you and authorised welfare staff\n\n'
-            'You can complete this offline — it will sync automatically.',
-            textAlign: TextAlign.center,
-            style: TextStyle(height: 1.6),
-          ),
-          const SizedBox(height: 32),
-          FilledButton(
-            onPressed: onStart,
-            style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-            child: const Text('Start Check-In', style: TextStyle(fontSize: 16)),
-          ),
-        ],
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+      child: LiquidGlassCard(
+        borderRadius: 22,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: const BoxDecoration(
+                  color: Color(0xE6E0F2FE),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.fact_check_rounded, size: 30, color: RakshaSetuColors.azure),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Biweekly Wellness Check-In',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Public Sans',
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: RakshaSetuColors.slate900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'A rapid 2-minute personal operational status check to track your baseline resilience.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: 'Public Sans', fontSize: 12, color: RakshaSetuColors.slate600),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.75),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _IntroBullet(text: 'Completely confidential & end-to-end encrypted'),
+                  SizedBox(height: 8),
+                  _IntroBullet(text: 'Isolated from Service promotion, ACRs, and posting files'),
+                  SizedBox(height: 8),
+                  _IntroBullet(text: 'Backed by cryptographic Welfare-HR Firewall'),
+                  SizedBox(height: 8),
+                  _IntroBullet(text: 'Works 100% offline with automatic mesh sync'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+            ObsidianButton(
+              label: 'Start Check-In',
+              icon: const Icon(Icons.arrow_forward_rounded, size: 17, color: Color(0xFF67E8F9)),
+              onPressed: onStart,
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _IntroBullet extends StatelessWidget {
+  final String text;
+  const _IntroBullet({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.check_circle_rounded, size: 16, color: RakshaSetuColors.emerald500),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontFamily: 'Public Sans', fontSize: 11.5, color: RakshaSetuColors.slate700, height: 1.3),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -175,37 +257,71 @@ class _QuestionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 16),
-          Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          Text(question, style: const TextStyle(fontSize: 15, height: 1.5)),
-          const SizedBox(height: 32),
-          ...List.generate(scale ~/ 2 + 1, (i) {
-            final value = i == 0 ? 0 : (i == 1 ? 2 : 4) + (i > 2 ? (i - 2) * 2 : 0);
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: OutlinedButton(
-                onPressed: () => onSelect(value),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  alignment: Alignment.centerLeft,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(i < labels.length ? labels[i] : 'Score $value', style: const TextStyle(fontSize: 14)),
-                ),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+      child: LiquidGlassCard(
+        borderRadius: 22,
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontFamily: 'Public Sans',
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: RakshaSetuColors.slate900,
               ),
-            );
-          }),
-          const Spacer(),
-          Text(disclaimer, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-        ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              question,
+              style: const TextStyle(fontFamily: 'Public Sans', fontSize: 13, height: 1.45, color: RakshaSetuColors.slate700),
+            ),
+            const SizedBox(height: 20),
+            ...List.generate(scale ~/ 2 + 1, (i) {
+              final value = i == 0 ? 0 : (i == 1 ? 2 : 4) + (i > 2 ? (i - 2) * 2 : 0);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: InkWell(
+                  onTap: () => onSelect(value),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0x6622D3EE), width: 1.0),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          i < labels.length ? labels[i] : 'Score $value',
+                          style: const TextStyle(
+                            fontFamily: 'Public Sans',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: RakshaSetuColors.slate900,
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: RakshaSetuColors.azure),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 16),
+            Text(
+              disclaimer,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontFamily: 'Public Sans', fontSize: 10.5, color: RakshaSetuColors.slate500),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -246,44 +362,65 @@ class _ScaleStepState extends State<_ScaleStep> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 16),
-          Text(widget.title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          Text(widget.question, style: const TextStyle(fontSize: 15, height: 1.5)),
-          const SizedBox(height: 48),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(widget.minLabel, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(widget.maxLabel, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
-          ),
-          Slider(
-            value: _value.toDouble(),
-            min: 1,
-            max: widget.maxValue.toDouble(),
-            divisions: widget.maxValue - 1,
-            label: '$_value',
-            onChanged: (v) => setState(() => _value = v.round()),
-          ),
-          Center(
-            child: Text(
-              'Rating: $_value / ${widget.maxValue}',
-              style: Theme.of(context).textTheme.headlineSmall,
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+      child: LiquidGlassCard(
+        borderRadius: 22,
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              widget.title,
+              style: const TextStyle(
+                fontFamily: 'Public Sans',
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: RakshaSetuColors.slate900,
+              ),
             ),
-          ),
-          const Spacer(),
-          FilledButton(
-            onPressed: () => widget.onSelect(_value),
-            style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-            child: const Text('Next', style: TextStyle(fontSize: 16)),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              widget.question,
+              style: const TextStyle(fontFamily: 'Public Sans', fontSize: 13, height: 1.45, color: RakshaSetuColors.slate700),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(widget.minLabel, style: const TextStyle(fontSize: 11, color: RakshaSetuColors.slate500)),
+                Text(widget.maxLabel, style: const TextStyle(fontSize: 11, color: RakshaSetuColors.slate500)),
+              ],
+            ),
+            Slider(
+              value: _value.toDouble(),
+              min: 1,
+              max: widget.maxValue.toDouble(),
+              divisions: widget.maxValue - 1,
+              activeColor: RakshaSetuColors.azure,
+              inactiveColor: const Color(0x3322D3EE),
+              label: '$_value',
+              onChanged: (v) => setState(() => _value = v.round()),
+            ),
+            Center(
+              child: Text(
+                'Rating: $_value / ${widget.maxValue}',
+                style: const TextStyle(
+                  fontFamily: 'Public Sans',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: RakshaSetuColors.navy,
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
+            ObsidianButton(
+              label: 'Next Question',
+              onPressed: () => widget.onSelect(_value),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -310,40 +447,58 @@ class _FreeTextStepState extends State<_FreeTextStep> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 16),
-          Text('Optional Note', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          const Text(
-            'Is there anything else you would like to share? This is completely optional and confidential.',
-            style: TextStyle(fontSize: 14, height: 1.5),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _controller,
-            maxLines: 5,
-            maxLength: 500,
-            decoration: const InputDecoration(
-              hintText: 'Optional — your words are private and protected...',
-              border: OutlineInputBorder(),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+      child: LiquidGlassCard(
+        borderRadius: 22,
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Optional Officer Note',
+              style: TextStyle(
+                fontFamily: 'Public Sans',
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: RakshaSetuColors.slate900,
+              ),
             ),
-          ),
-          const Spacer(),
-          FilledButton(
-            onPressed: () => widget.onSubmit(_controller.text.isEmpty ? null : _controller.text),
-            style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-            child: const Text('Submit Check-In', style: TextStyle(fontSize: 16)),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: widget.onSkip,
-            child: const Text('Skip and Submit'),
-          ),
-        ],
+            const SizedBox(height: 8),
+            const Text(
+              'Is there anything else you would like to note? This is completely optional and isolated by the HR Firewall.',
+              style: TextStyle(fontFamily: 'Public Sans', fontSize: 12, height: 1.4, color: RakshaSetuColors.slate600),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controller,
+              maxLines: 4,
+              maxLength: 500,
+              style: const TextStyle(fontSize: 13, color: RakshaSetuColors.slate900),
+              decoration: InputDecoration(
+                hintText: 'Optional — notes are encrypted with your personal key...',
+                hintStyle: const TextStyle(fontSize: 12, color: RakshaSetuColors.slate400),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ObsidianButton(
+              label: 'Submit Check-In',
+              onPressed: () => widget.onSubmit(_controller.text.isEmpty ? null : _controller.text),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: widget.onSkip,
+                child: const Text(
+                  'Skip and Submit',
+                  style: TextStyle(fontFamily: 'Public Sans', fontWeight: FontWeight.w700, color: RakshaSetuColors.azure),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -357,54 +512,69 @@ class _DoneStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Icon(
-            isElevated ? Icons.info_rounded : Icons.check_circle_rounded,
-            size: 72,
-            color: isElevated ? Colors.orange : Colors.green,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            isElevated ? 'Check-In Complete' : 'Thank you!',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            isElevated
-                ? 'Your responses suggest you might benefit from a conversation with a welfare officer. '
-                    'You will receive a private outreach at your convenience. '
-                    'No action will be taken without your involvement.'
-                : 'Your check-in has been recorded securely. '
-                    'Your wellness matters. See you in two weeks.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 15, height: 1.6),
-          ),
-          const SizedBox(height: 32),
-          if (isElevated) ...[
-            OutlinedButton.icon(
-              onPressed: () => context.push('/crisis'),
-              icon: const Icon(Icons.emergency),
-              label: const Text('Immediate Support'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+      child: LiquidGlassCard(
+        borderRadius: 22,
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: isElevated ? const Color(0xFFFEF3C7) : const Color(0xFFECFDF5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isElevated ? Icons.info_rounded : Icons.check_circle_rounded,
+                  size: 34,
+                  color: isElevated ? RakshaSetuColors.amber800 : RakshaSetuColors.emerald800,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isElevated ? 'Check-In Complete • Support Flagged' : 'Check-In Complete',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Public Sans',
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: RakshaSetuColors.slate900,
               ),
             ),
             const SizedBox(height: 8),
+            Text(
+              isElevated
+                  ? 'Your baseline indicates high operational fatigue. A confidential conversation with your unit welfare officer is available whenever you are ready.'
+                  : 'Your check-in has been encrypted and recorded securely. Zero HR exposure.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontFamily: 'Public Sans', fontSize: 12, height: 1.45, color: RakshaSetuColors.slate600),
+            ),
+            const SizedBox(height: 24),
+            if (isElevated) ...[
+              OutlinedButton.icon(
+                onPressed: () => context.push('/crisis'),
+                icon: const Icon(Icons.emergency_rounded, color: RakshaSetuColors.rose600, size: 18),
+                label: const Text('Connect with 24x7 Helpline', style: TextStyle(color: RakshaSetuColors.rose600, fontWeight: FontWeight.w700)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: RakshaSetuColors.rose600),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            ObsidianButton(
+              label: 'Done',
+              onPressed: onClose,
+            ),
           ],
-          FilledButton(
-            onPressed: onClose,
-            style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-            child: const Text('Done', style: TextStyle(fontSize: 16)),
-          ),
-        ],
+        ),
       ),
     );
   }

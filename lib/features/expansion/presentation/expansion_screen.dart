@@ -98,7 +98,7 @@ class _ExpansionScreenState extends State<ExpansionScreen>
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Raksha Welfare architecture is built with domain-agnostic telemetry layers and configurable organizational hierarchies, enabling plug-and-play expansion to state police, disaster rescue, emergency response, and heavy civil workforces.',
+                  'RakshaSetu architecture is built with domain-agnostic telemetry layers and configurable organizational hierarchies, enabling plug-and-play expansion to state police, disaster rescue, emergency response, and heavy civil workforces.',
                   style: TextStyle(fontSize: 13, height: 1.4),
                 ),
                 const SizedBox(height: 14),

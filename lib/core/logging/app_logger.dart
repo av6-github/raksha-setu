@@ -1,5 +1,5 @@
 // lib/core/logging/app_logger.dart
-// Privacy-preserving structured logger for Raksha Welfare system
+// Privacy-preserving structured logger for RakshaSetu system
 
 import 'package:flutter/foundation.dart';
 

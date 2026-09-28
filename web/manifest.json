@@ -1,11 +1,11 @@
 {
-    "name": "raksha_welfare",
-    "short_name": "raksha_welfare",
+    "name": "RakshaSetu",
+    "short_name": "RakshaSetu",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FAF8F2",
+    "theme_color": "#0C2340",
+    "description": "RakshaSetu - Armed Forces Welfare & Resilience Platform.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

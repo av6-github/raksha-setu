@@ -1,7 +1,11 @@
 // lib/features/family/presentation/morale_vault_screen.dart
 // Officer Morale Vault: Offline-cached audio voice notes and video messages from family
+// Styled with Arctic Frost theme, RakshaSetuScaffold, and LiquidGlassCards
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/rakshasetu_theme.dart';
+import '../../../shared/widgets/liquid_glass_card.dart';
+import '../../../shared/widgets/rakshasetu_scaffold.dart';
 import '../data/family_repository.dart';
 import '../domain/morale_vault_item.dart';
 
@@ -53,138 +57,171 @@ class _MoraleVaultScreenState extends State<MoraleVaultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Morale Vault'),
-        backgroundColor: Colors.amber.shade900,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-            onPressed: _loadClearedVaultItems,
-          ),
-        ],
+    return RakshaSetuScaffold(
+      currentRoute: '/morale-vault',
+      subtitle: 'Family & Morale Vault • Offline Cached',
+      showBackButton: true,
+      trailing: IconButton(
+        icon: const Icon(Icons.refresh_rounded, size: 19, color: RakshaSetuColors.slate700),
+        tooltip: 'Refresh Vault',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+        onPressed: _loadClearedVaultItems,
       ),
       body: Column(
         children: [
-          // Offline Deployment Reassurance
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            color: Colors.amber.shade50,
-            child: Row(
-              children: [
-                Icon(Icons.offline_pin_rounded, size: 22, color: Colors.amber.shade900),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Offline Morale Vault: Approved family voice and video notes are cached locally '
-                    'so you can listen and recharge even when deployed without network access.',
-                    style: TextStyle(fontSize: 11, color: Colors.amber.shade900, height: 1.3),
+          // Reassurance Banner
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            child: LiquidGlassCard(
+              borderRadius: 14,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              borderLeftColor: RakshaSetuColors.amber800,
+              borderLeftWidth: 3.5,
+              child: const Row(
+                children: [
+                  Icon(Icons.offline_pin_rounded, size: 16, color: RakshaSetuColors.amber800),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Approved family voice & video notes are locally cached so you can listen anywhere, even offline.',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Public Sans',
+                        fontSize: 10.5,
+                        color: RakshaSetuColors.slate800,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           if (_isLoading)
-            const LinearProgressIndicator(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: LinearProgressIndicator(
+                color: RakshaSetuColors.azure,
+                backgroundColor: Color(0x3322D3EE),
+              ),
+            ),
 
           Expanded(
             child: _items.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.sentiment_satisfied_alt, size: 48, color: Colors.amber),
-                          SizedBox(height: 12),
-                          Text(
-                            'No Morale Messages Yet',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            'Messages sent by your verified family members will appear here once cleared by security review.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
+                      padding: const EdgeInsets.all(24.0),
+                      child: LiquidGlassCard(
+                        borderRadius: 22,
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFEF3C7),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.favorite_rounded, size: 28, color: RakshaSetuColors.amber800),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'No Morale Messages Yet',
+                              style: TextStyle(
+                                fontFamily: 'Public Sans',
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                                color: RakshaSetuColors.slate900,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Encrypted audio and video notes sent by your verified family members will appear here once cleared.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Public Sans',
+                                fontSize: 11.5,
+                                color: RakshaSetuColors.slate600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(14, 8, 14, 90),
                     itemCount: _items.length,
                     itemBuilder: (context, index) {
                       final item = _items[index];
                       final isPlaying = _currentlyPlayingId == item.id;
                       final isAudio = item.mediaType == 'audio';
 
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        elevation: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: LiquidGlassCard(
+                          borderRadius: 18,
+                          padding: const EdgeInsets.all(14),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
-                                  CircleAvatar(
-                                    backgroundColor: Colors.amber.shade100,
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFEF3C7),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                     child: Icon(
                                       isAudio ? Icons.record_voice_over_rounded : Icons.videocam_rounded,
-                                      color: Colors.amber.shade900,
+                                      color: RakshaSetuColors.amber800,
+                                      size: 19,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          item.familyMemberName,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                          item.familyMemberName.isNotEmpty
+                                              ? item.familyMemberName
+                                              : 'Family Member Note',
+                                          style: const TextStyle(
+                                            fontFamily: 'Public Sans',
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13,
+                                            color: RakshaSetuColors.slate900,
+                                          ),
                                         ),
                                         Text(
-                                          '${isAudio ? "Voice Note" : "Video Clip"} • Received ${_formatDate(item.uploadedAt)}',
-                                          style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                                          item.transcriptOrCaption.isNotEmpty
+                                              ? item.transcriptOrCaption
+                                              : 'Encrypted Family Voice Note',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontFamily: 'Public Sans',
+                                            fontSize: 10.5,
+                                            color: RakshaSetuColors.slate500,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  Chip(
-                                    avatar: const Icon(Icons.verified, size: 14, color: Colors.green),
-                                    label: const Text('Cleared', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                                    backgroundColor: Colors.green.shade50,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.grey.shade200),
-                                ),
-                                child: Text(
-                                  '"${item.transcriptOrCaption}"',
-                                  style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic, height: 1.3),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: isPlaying ? Colors.amber.shade800 : Colors.indigo.shade800,
-                                      foregroundColor: Colors.white,
+                                  // Play/Pause Action
+                                  IconButton(
+                                    icon: Icon(
+                                      isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded,
+                                      size: 34,
+                                      color: RakshaSetuColors.azure,
                                     ),
-                                    icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-                                    label: Text(isPlaying ? 'Pause' : (isAudio ? 'Listen' : 'Watch')),
                                     onPressed: () {
                                       setState(() {
                                         _currentlyPlayingId = isPlaying ? null : item.id;
@@ -193,6 +230,13 @@ class _MoraleVaultScreenState extends State<MoraleVaultScreen> {
                                   ),
                                 ],
                               ),
+                              if (isPlaying) ...[
+                                const SizedBox(height: 10),
+                                const LinearProgressIndicator(
+                                  color: RakshaSetuColors.azure,
+                                  backgroundColor: Color(0x3322D3EE),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -203,9 +247,5 @@ class _MoraleVaultScreenState extends State<MoraleVaultScreen> {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime dt) {
-    return '${dt.day}/${dt.month}/${dt.year}';
   }
 }

@@ -12,7 +12,7 @@ class BattalionUnit {
   final String force; // 'bsf', 'crpf', 'assam_rifles', 'itbp', 'cisf'
   final DeploymentType deploymentType;
   final int activePersonnelCount;
-  final bool isPilotUnit; // true = Pilot with Raksha Welfare, false = Matching Control SOP
+  final bool isPilotUnit; // true = Pilot with RakshaSetu, false = Matching Control SOP
   final String locationSector;
 
   const BattalionUnit({

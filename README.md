@@ -1,4 +1,4 @@
-# Raksha Welfare (रक्षा) — Secure Personnel Welfare & Operational Readiness Platform
+# RakshaSetu (रक्षासेतु) — Secure Personnel Welfare & Operational Readiness Platform
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.22+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.4+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
@@ -7,7 +7,7 @@
 [![Quality Gate](https://img.shields.io/badge/Tests-271%20Passed-brightgreen)](file:///d:/raksha-sih/test)
 [![Analyzer](https://img.shields.io/badge/flutter%20analyze-0%20issues-brightgreen)](file:///d:/raksha-sih)
 
-**Raksha Welfare** is an enterprise-grade, privacy-first welfare and readiness ecosystem engineered specifically for **Central Armed Police Forces (CAPF)**—including CRPF, BSF, ITBP, CISF, SSB, and Assam Rifles. 
+**RakshaSetu** is an enterprise-grade, privacy-first welfare and readiness ecosystem engineered specifically for **Central Armed Police Forces (CAPF)**—including CRPF, BSF, ITBP, CISF, SSB, and Assam Rifles. 
 
 The platform bridges operational command needs with confidential mental health care, family morale pipelines, and statutory welfare benefit discovery while strictly enforcing cryptographic firewalls and statutory privacy thresholds.
 

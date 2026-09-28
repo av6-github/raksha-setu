@@ -4,6 +4,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme/rakshasetu_theme.dart';
+import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/aura_background.dart';
+import '../../../shared/widgets/floating_dock.dart';
 import '../../auth/presentation/auth_view_model.dart';
 import '../domain/roster_recommendation.dart';
 import '../domain/unit_operational_metrics.dart';
@@ -45,112 +49,134 @@ class _CommanderDashboardScreenState extends State<CommanderDashboardScreen> wit
       final unitReports = vm?.unitReports ?? [];
 
       return Scaffold(
-        appBar: AppBar(
-          title: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Commander Unit Overview', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text(
-                'COL. RAJESH SHARMA • SECTOR BRIGADE HQ',
-                style: TextStyle(fontSize: 10, color: Colors.amberAccent, letterSpacing: 1.1, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.blueGrey.shade900,
-          foregroundColor: Colors.white,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: 'Refresh',
-              onPressed: () => vm?.loadUnitData(vm.selectedUnitCode),
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout_outlined),
-              tooltip: 'Sign Out',
-              onPressed: () => authVm?.signOut(),
-            ),
-          ],
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.amberAccent,
-            labelColor: Colors.amberAccent,
-            unselectedLabelColor: Colors.white70,
-            tabs: const [
-              Tab(icon: Icon(Icons.dashboard_rounded, size: 18), text: 'Readiness & Roster'),
-              Tab(icon: Icon(Icons.assignment_outlined, size: 18), text: 'Unit Reports'),
-              Tab(icon: Icon(Icons.timelapse_rounded, size: 18), text: 'Duty & Friction'),
-            ],
-          ),
-        ),
-        body: Column(
-          children: [
-            // Command Transparency Notice
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.blueGrey.shade50,
-              child: Row(
-                children: [
-                  Icon(Icons.policy_outlined, size: 20, color: Colors.blueGrey.shade900),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Welfare-HR Firewall Guard: Command view is strictly restricted to aggregate unit readiness '
-                      'and binary operational availability. Zero individual stress scores or clinical diagnoses exist in this console.',
-                      style: TextStyle(fontSize: 11, color: Colors.blueGrey.shade900),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (vm?.isLoading ?? false)
-              const LinearProgressIndicator(),
-
-            // Unit Switcher
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
+        backgroundColor: RakshaSetuColors.background,
+        body: AuraBackground(
+          child: SafeArea(
+            bottom: false,
+            child: Stack(
+              children: [
+                Column(
                   children: [
-                    const Text('Selected Unit: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('Charlie Co (84 pers)'),
-                      selected: vm?.selectedUnitCode == '12-BN-CHARLIE',
-                      onSelected: (_) => vm?.loadUnitData('12-BN-CHARLIE'),
+                    // Consistent RakshaSetu Header
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+                      child: AppHeader(
+                        subtitle: 'Commander Console • Sector HQ',
+                        showBackButton: true,
+                        onSignOut: () => authVm?.signOut(),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.refresh_rounded, size: 19, color: RakshaSetuColors.azure),
+                          tooltip: 'Refresh',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                          onPressed: () => vm?.loadUnitData(vm.selectedUnitCode),
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('Forward Det (6 pers)'),
-                      selected: vm?.selectedUnitCode == 'FORWARD-DET-SMALL',
-                      onSelected: (_) => vm?.loadUnitData('FORWARD-DET-SMALL'),
+
+                    // TabBar
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
+                      ),
+                      child: TabBar(
+                        controller: _tabController,
+                        indicatorColor: RakshaSetuColors.gold,
+                        indicatorWeight: 3,
+                        labelColor: RakshaSetuColors.navy,
+                        unselectedLabelColor: RakshaSetuColors.slate500,
+                        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5),
+                        tabs: const [
+                          Tab(icon: Icon(Icons.dashboard_rounded, size: 17), text: 'Readiness & Roster'),
+                          Tab(icon: Icon(Icons.assignment_outlined, size: 17), text: 'Unit Reports'),
+                          Tab(icon: Icon(Icons.timelapse_rounded, size: 17), text: 'Duty & Friction'),
+                        ],
+                      ),
+                    ),
+
+                    // Command Transparency Notice
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                      color: RakshaSetuColors.cyan100.withValues(alpha: 0.5),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.policy_outlined, size: 16, color: RakshaSetuColors.navy),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Welfare-HR Firewall Guard: Command view is strictly restricted to aggregate unit readiness '
+                              'and binary operational availability. Zero individual stress scores or clinical diagnoses exist in this console.',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 10, color: RakshaSetuColors.navy, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (vm?.isLoading ?? false)
+                      const LinearProgressIndicator(color: RakshaSetuColors.azure),
+
+                    // Unit Switcher
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            const Text('Selected Unit: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(width: 8),
+                            ChoiceChip(
+                              label: const Text('Charlie Co (84 pers)', style: TextStyle(fontSize: 11)),
+                              selected: vm?.selectedUnitCode == '12-BN-CHARLIE',
+                              onSelected: (_) => vm?.loadUnitData('12-BN-CHARLIE'),
+                            ),
+                            const SizedBox(width: 8),
+                            ChoiceChip(
+                              label: const Text('Forward Det (6 pers)', style: TextStyle(fontSize: 11)),
+                              selected: vm?.selectedUnitCode == 'FORWARD-DET-SMALL',
+                              onSelected: (_) => vm?.loadUnitData('FORWARD-DET-SMALL'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          // Tab 1: Readiness & Operational Roster
+                          metrics == null
+                              ? const Center(child: Text('Loading unit operational data...'))
+                              : metrics.isSuppressed
+                                  ? _buildSuppressionCard(metrics)
+                                  : _buildReadinessTab(metrics, recommendations, roster, vm),
+
+                          // Tab 2: Unit Anonymous Reports & Grievances
+                          _buildUnitReportsTab(unitReports, vm),
+
+                          // Tab 3: Duty & Leave Friction Analysis
+                          _buildFrictionTab(metrics),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
+
+                // Pinned Floating Dock
+                const Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 6,
+                  child: FloatingDock(currentRoute: '/commander'),
+                ),
+              ],
             ),
-
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // Tab 1: Readiness & Operational Roster
-                  metrics == null
-                      ? const Center(child: Text('Loading unit operational data...'))
-                      : metrics.isSuppressed
-                          ? _buildSuppressionCard(metrics)
-                          : _buildReadinessTab(metrics, recommendations, roster, vm),
-
-                  // Tab 2: Unit Anonymous Reports & Grievances
-                  _buildUnitReportsTab(unitReports, vm),
-
-                  // Tab 3: Duty & Leave Friction Analysis
-                  _buildFrictionTab(metrics),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
@@ -209,7 +235,7 @@ class _CommanderDashboardScreenState extends State<CommanderDashboardScreen> wit
     CommanderViewModel? vm,
   ) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 92),
       children: [
         // Unit Readiness Indicators Card
         Card(
@@ -428,7 +454,7 @@ class _CommanderDashboardScreenState extends State<CommanderDashboardScreen> wit
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 92),
       itemCount: reports.length,
       itemBuilder: (context, index) {
         final r = reports[index];
@@ -529,7 +555,7 @@ class _CommanderDashboardScreenState extends State<CommanderDashboardScreen> wit
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 92),
       children: [
         Card(
           elevation: 2,

@@ -16,7 +16,7 @@ class AppLocalizations {
 
   static const _localizedValues = <String, Map<String, String>>{
     'en': {
-      'app_title': 'Raksha Welfare',
+      'app_title': 'RakshaSetu',
       'tagline': 'Morale Wins Wars',
       'login': 'Sign In',
       'email': 'Service Email / ID',
@@ -29,7 +29,7 @@ class AppLocalizations {
       'privacy_commitment': 'Consent-Based & Confidential',
     },
     'hi': {
-      'app_title': 'रक्षा कल्याण (Raksha)',
+      'app_title': 'रक्षासेतु (RakshaSetu)',
       'tagline': 'मनोबल से विजय',
       'login': 'साइन इन करें',
       'email': 'सेवा ईमेल / पहचान पत्र',
@@ -42,7 +42,7 @@ class AppLocalizations {
       'privacy_commitment': 'सहमति-आधारित एवं पूर्णतः गोपनीय',
     },
     'pa': {
-      'app_title': 'ਰਕਸ਼ਾ ਭਲਾਈ (Raksha)',
+      'app_title': 'ਰਕਸ਼ਾਸੇਤੂ (RakshaSetu)',
       'tagline': 'ਮਨੋਬਲ ਨਾਲ ਜਿੱਤ',
       'login': 'ਸਾਈਨ ਇਨ ਕਰੋ',
       'email': 'ਸੇਵਾ ਈਮੇਲ / ਆਈਡੀ',
@@ -55,7 +55,7 @@ class AppLocalizations {
       'privacy_commitment': 'ਸਹਿਮਤੀ-ਅਧਾਰਤ ਅਤੇ ਗੁਪਤ',
     },
     'bn': {
-      'app_title': 'রক্ষা কল্যাণ (Raksha)',
+      'app_title': 'রক্ষা সেতু (RakshaSetu)',
       'tagline': 'মনোবলে বিজয়',
       'login': 'সাইন ইন করুন',
       'email': 'পরিষেবা ইমেল / আইডি',
@@ -68,7 +68,7 @@ class AppLocalizations {
       'privacy_commitment': 'সম্মতি-ভিত্তিক ও গোপনীয়',
     },
     'as': {
-      'app_title': 'ৰক্ষা কল্যাণ (Raksha)',
+      'app_title': 'ৰক্ষা সেতু (RakshaSetu)',
       'tagline': 'মনোবলেৰে বিজয়',
       'login': 'ছাইন ইন কৰক',
       'email': 'সেৱা ইমেইল / আই ডি',
@@ -81,7 +81,7 @@ class AppLocalizations {
       'privacy_commitment': 'সন্মতি-ভিত্তিক আৰু গোপনীয়',
     },
     'ta': {
-      'app_title': 'ரக்ஷா நலம் (Raksha)',
+      'app_title': 'ரக்ஷா சேது (RakshaSetu)',
       'tagline': 'மன உறுதியே வெற்றி தரும்',
       'login': 'உள்நுழைக',
       'email': 'பணி மின்னஞ்சல் / அடையாள எண்',
@@ -94,7 +94,7 @@ class AppLocalizations {
       'privacy_commitment': 'ஒப்புதல் அடிப்படையிலானது & ரகசியமானது',
     },
     'te': {
-      'app_title': 'రక్షా సంక్షేమం (Raksha)',
+      'app_title': 'రక్షా సేతు (RakshaSetu)',
       'tagline': 'మనోబలంతో విజయం',
       'login': 'సైన్ ఇన్ చేయండి',
       'email': 'సర్వీస్ ఈమెయిల్ / ఐడీ',
@@ -107,7 +107,7 @@ class AppLocalizations {
       'privacy_commitment': 'సమ్మతి ఆధారితం మరియు పూర్తి గోప్యత',
     },
     'mr': {
-      'app_title': 'रक्षा कल्याण (Raksha)',
+      'app_title': 'रक्षासेतू (RakshaSetu)',
       'tagline': 'मनोधैर्याने विजय',
       'login': 'साइन इन करा',
       'email': 'सेवा ईमेल / आयडी',

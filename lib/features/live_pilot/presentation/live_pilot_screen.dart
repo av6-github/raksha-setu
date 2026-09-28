@@ -215,7 +215,7 @@ class _LivePilotScreenState extends State<LivePilotScreen>
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Empirical comparative data comparing Raksha Welfare pilot units against matched control SOP units without digital intervention.',
+                  'Empirical comparative data comparing RakshaSetu pilot units against matched control SOP units without digital intervention.',
                   style: TextStyle(fontSize: 12, height: 1.3),
                 ),
               ],

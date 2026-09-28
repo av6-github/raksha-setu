@@ -1,5 +1,5 @@
 // lib/core/errors/app_exceptions.dart
-// Domain exception hierarchy for Raksha Welfare system
+// Domain exception hierarchy for RakshaSetu system
 
 abstract class AppException implements Exception {
   final String message;

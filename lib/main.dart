@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sp;
 
 import 'core/config/app_config.dart';
+import 'core/theme/rakshasetu_theme.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/logging/app_logger.dart';
 import 'core/networking/network_client.dart';
@@ -48,8 +49,6 @@ import 'features/shadow_pilot/data/shadow_pilot_repository.dart';
 import 'features/live_pilot/data/live_pilot_repository.dart';
 import 'features/scale/data/scale_repository.dart';
 import 'features/expansion/data/expansion_repository.dart';
-
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -182,42 +181,25 @@ void main() async {
         Provider<IExpansionRepository>.value(value: expansionRepository),
         ChangeNotifierProvider<AuthViewModel>.value(value: authViewModel),
       ],
-      child: const RakshaWelfareApp(),
+      child: const RakshaSetuApp(),
     ),
   );
-
-
 }
 
-
-class RakshaWelfareApp extends StatelessWidget {
-  const RakshaWelfareApp({super.key});
+class RakshaSetuApp extends StatelessWidget {
+  const RakshaSetuApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final authViewModel = context.watch<AuthViewModel>();
     final router = AppRouter.createRouter(authViewModel);
-
     final appLockService = Provider.of<IAppLockService?>(context, listen: false);
 
     return MaterialApp.router(
-      title: 'Raksha Welfare',
+      title: 'RakshaSetu',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A), // Military Deep Blue
-          brightness: Brightness.light,
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A),
-          brightness: Brightness.dark,
-        ),
-      ),
-      themeMode: ThemeMode.system,
+      theme: RakshaSetuTheme.lightTheme,
+      themeMode: ThemeMode.light,
       localizationsDelegates: const [
         AppLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
@@ -238,3 +220,6 @@ class RakshaWelfareApp extends StatelessWidget {
     );
   }
 }
+
+// Keep alias for backwards compatibility if referenced
+typedef RakshaWelfareApp = RakshaSetuApp;

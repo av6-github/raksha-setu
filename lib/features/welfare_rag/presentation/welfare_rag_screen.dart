@@ -1,7 +1,15 @@
 // lib/features/welfare_rag/presentation/welfare_rag_screen.dart
 // Interactive Welfare Scheme RAG Assistant with source citations, confidence indicators, and ingestion dashboard
+// Revamped with Arctic Frost liquid glass panels, consistent header, floating dock, and overflow-free architecture
 
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../core/theme/rakshasetu_theme.dart';
+import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/aura_background.dart';
+import '../../../shared/widgets/floating_dock.dart';
+import '../../../shared/widgets/liquid_glass_card.dart';
+import '../../../shared/widgets/kinetic_dots_loader.dart';
 import '../data/welfare_rag_repository.dart';
 import '../domain/rag_retrieval_result.dart';
 import 'welfare_rag_view_model.dart';
@@ -62,63 +70,74 @@ class _WelfareRagScreenState extends State<WelfareRagScreen> {
       listenable: _viewModel,
       builder: (context, _) {
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Welfare Scheme Assistant'),
-            backgroundColor: Colors.teal.shade800,
-            foregroundColor: Colors.white,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.dataset_outlined),
-                tooltip: 'Corpus Ingestion Status',
-                onPressed: _showIngestionStatusDialog,
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              // Top Trust & Guardrail Banner
-              _buildGroundingBanner(),
-
-              // Quick Suggestions Bar
-              _buildSuggestionsBar(),
-
-              // Messages List
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  itemCount: _viewModel.messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = _viewModel.messages[index];
-                    return _buildMessageBubble(msg);
-                  },
-                ),
-              ),
-
-              // Query Loading Indicator
-              if (_viewModel.isQuerying)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          backgroundColor: RakshaSetuColors.background,
+          body: AuraBackground(
+            child: SafeArea(
+              bottom: false,
+              child: Stack(
+                children: [
+                  Column(
                     children: [
-                      const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                      // 1. Consistent RakshaSetu Header with Integrated Corpus Status Action
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+                        child: AppHeader(
+                          subtitle: 'Welfare Schemes Assistant • WARB Grounded',
+                          showBackButton: true,
+                          trailing: IconButton(
+                            icon: const Icon(Icons.dataset_outlined, size: 19, color: RakshaSetuColors.defenceDeep),
+                            tooltip: 'Corpus Ingestion Status',
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                            onPressed: _showIngestionStatusDialog,
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Searching MHA & WARB authoritative documents...',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+
+                      // 2. Top Trust & Guardrail Banner
+                      _buildGroundingBanner(),
+
+                      // 3. Quick Suggestions Carousel
+                      _buildSuggestionsBar(),
+
+                      // 4. Messages Conversation Flow
+                      Expanded(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.fromLTRB(14, 8, 14, 16),
+                          itemCount: _viewModel.messages.length,
+                          itemBuilder: (context, index) {
+                            final msg = _viewModel.messages[index];
+                            return _buildMessageBubble(msg);
+                          },
+                        ),
                       ),
+
+                      // 5. Query Loading Indicator
+                      if (_viewModel.isQuerying)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: KineticDotsLoader(
+                            size: 14,
+                            label: 'Searching MHA & WARB authoritative documents...',
+                          ),
+                        ),
+
+                      // 6. Frosted Floating Input Bar (with bottom clearance above FloatingDock)
+                      _buildInputBar(),
                     ],
                   ),
-                ),
 
-              // Input Bar
-              _buildInputBar(),
-            ],
+                  // Pinned Floating Dock at Bottom
+                  const Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 6,
+                    child: FloatingDock(currentRoute: '/welfare-assistant'),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -126,47 +145,91 @@ class _WelfareRagScreenState extends State<WelfareRagScreen> {
   }
 
   Widget _buildGroundingBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.teal.shade50,
-      child: Row(
-        children: [
-          Icon(Icons.verified_outlined, size: 18, color: Colors.teal.shade800),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Grounded in official MHA, NHA, and WARB circulars. Zero fabricated entitlements.',
-              style: TextStyle(fontSize: 11.5, color: Colors.teal.shade900, fontWeight: FontWeight.w500),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      child: LiquidGlassCard(
+        borderRadius: 14,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        borderLeftColor: RakshaSetuColors.azure,
+        borderLeftWidth: 3.5,
+        child: const Row(
+          children: [
+            Icon(Icons.verified_outlined, size: 15, color: RakshaSetuColors.azure),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Grounded in official MHA, NHA, and WARB circulars. Zero fabricated entitlements.',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'Public Sans',
+                  fontSize: 10.5,
+                  color: RakshaSetuColors.navy,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSuggestionsBar() {
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    return SizedBox(
+      height: 38,
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         itemCount: _quickPrompts.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        separatorBuilder: (context, index) => const SizedBox(width: 6),
         itemBuilder: (context, index) {
           final prompt = _quickPrompts[index];
-          return ActionChip(
-            label: Text(
-              prompt,
-              style: TextStyle(fontSize: 11.5, color: Colors.teal.shade900),
-            ),
-            backgroundColor: Colors.teal.shade50,
-            side: BorderSide(color: Colors.teal.shade200),
-            onPressed: () {
+          return InkWell(
+            onTap: () {
               _queryController.text = prompt;
               _handleSend();
             },
+            borderRadius: BorderRadius.circular(9999),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(9999),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.72),
+                    borderRadius: BorderRadius.circular(9999),
+                    border: Border.all(color: const Color(0x6622D3EE), width: 1.0),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0A06B6D4),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.auto_awesome_rounded, size: 12, color: RakshaSetuColors.azure),
+                      const SizedBox(width: 5),
+                      Text(
+                        prompt,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontFamily: 'Public Sans',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: RakshaSetuColors.slate800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           );
         },
       ),
@@ -174,74 +237,138 @@ class _WelfareRagScreenState extends State<WelfareRagScreen> {
   }
 
   Widget _buildMessageBubble(RagChatMessage msg) {
-    return Align(
-      alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: msg.isUser ? Colors.teal.shade700 : Colors.grey.shade100,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(12),
-            topRight: const Radius.circular(12),
-            bottomLeft: Radius.circular(msg.isUser ? 12 : 2),
-            bottomRight: Radius.circular(msg.isUser ? 2 : 12),
-          ),
-          border: msg.isUser ? null : Border.all(color: Colors.grey.shade300),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              msg.text,
-              style: TextStyle(
-                fontSize: 13.5,
-                color: msg.isUser ? Colors.white : Colors.black87,
-                height: 1.4,
-              ),
+    if (msg.isUser) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.82),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: RakshaSetuColors.obsidianGradient,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+              bottomLeft: Radius.circular(16),
+              bottomRight: Radius.circular(4),
             ),
+            border: Border.all(color: const Color(0x6122D3EE), width: 1.0),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x2B06B6D4),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Text(
+            msg.text,
+            style: const TextStyle(
+              fontFamily: 'Public Sans',
+              fontSize: 13,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              height: 1.35,
+            ),
+          ),
+        ),
+      );
+    }
 
-            // Low Confidence Warning
-            if (msg.isLowConfidence) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.orange.shade300),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.info_outline, size: 14, color: Colors.orange.shade900),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Low Retrieval Confidence • Verification Required',
-                      style: TextStyle(fontSize: 11, color: Colors.orange.shade900, fontWeight: FontWeight.bold),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.88),
+        margin: const EdgeInsets.only(bottom: 12),
+        child: LiquidGlassCard(
+          borderRadius: 18,
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: const Color(0xE6CFFAFE),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                  ],
-                ),
+                    child: const Icon(Icons.auto_awesome_rounded, size: 14, color: RakshaSetuColors.azure),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'WARB Grounded Response',
+                    style: TextStyle(
+                      fontFamily: 'Public Sans',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: RakshaSetuColors.navy,
+                    ),
+                  ),
+                ],
               ),
-            ],
-
-            // Citations Card
-            if (msg.citations.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              const Divider(height: 16),
+              const SizedBox(height: 8),
               Text(
-                'Authoritative Sources Cited:',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal.shade900,
+                msg.text,
+                style: const TextStyle(
+                  fontFamily: 'Public Sans',
+                  fontSize: 12.5,
+                  color: RakshaSetuColors.slate900,
+                  height: 1.4,
                 ),
               ),
-              const SizedBox(height: 6),
-              ...msg.citations.map((c) => _buildCitationPill(c)),
+
+              // Low Confidence Warning
+              if (msg.isLowConfidence) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFCD34D)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.warning_amber_rounded, size: 14, color: RakshaSetuColors.amber800),
+                      SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          'Low Retrieval Confidence • Human Verification Recommended',
+                          style: TextStyle(
+                            fontFamily: 'Public Sans',
+                            fontSize: 10.5,
+                            color: RakshaSetuColors.amber900,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Citations Card
+              if (msg.citations.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                const Divider(height: 14, color: Color(0x2694A3B8)),
+                const Text(
+                  'Authoritative Sources Cited:',
+                  style: TextStyle(
+                    fontFamily: 'Public Sans',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: RakshaSetuColors.slate800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                ...msg.citations.map((c) => _buildCitationPill(c)),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -249,35 +376,46 @@ class _WelfareRagScreenState extends State<WelfareRagScreen> {
 
   Widget _buildCitationPill(SourceCitation c) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: 5),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.teal.shade200),
+        color: Colors.white.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0x6622D3EE), width: 1.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.menu_book, size: 14, color: Colors.teal.shade800),
+              const Icon(Icons.menu_book_rounded, size: 13, color: RakshaSetuColors.azure),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   c.schemeName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  style: const TextStyle(
+                    fontFamily: 'Public Sans',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11.5,
+                    color: RakshaSetuColors.navy,
+                  ),
                 ),
               ),
             ],
           ),
           if (c.officialReference != null) ...[
             const SizedBox(height: 2),
-            Text('Ref: ${c.officialReference!}', style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+            Text(
+              'Ref: ${c.officialReference!}',
+              style: const TextStyle(fontFamily: 'Public Sans', fontSize: 10, color: RakshaSetuColors.slate600),
+            ),
           ],
           if (c.url != null) ...[
-            const SizedBox(height: 2),
-            Text('Portal: ${c.url!}', style: TextStyle(fontSize: 11, color: Colors.blue.shade800)),
+            const SizedBox(height: 1),
+            Text(
+              'Portal: ${c.url!}',
+              style: const TextStyle(fontFamily: 'Public Sans', fontSize: 10, color: RakshaSetuColors.azure),
+            ),
           ],
         ],
       ),
@@ -286,34 +424,82 @@ class _WelfareRagScreenState extends State<WelfareRagScreen> {
 
   Widget _buildInputBar() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.fromLTRB(14, 4, 14, 68),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, -2)),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1F06B6D4),
+            blurRadius: 18,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _queryController,
-                decoration: InputDecoration(
-                  hintText: 'Ask about Ayushman CAPF, PMSS, Bharat Ke Veer...',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                onSubmitted: (_) => _handleSend(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.88),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.95),
+                width: 1.2,
               ),
             ),
-            const SizedBox(width: 8),
-            IconButton.filled(
-              icon: const Icon(Icons.arrow_upward),
-              style: IconButton.styleFrom(backgroundColor: Colors.teal.shade800),
-              onPressed: _handleSend,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _queryController,
+                    style: const TextStyle(
+                      fontFamily: 'Public Sans',
+                      fontSize: 12.5,
+                      color: RakshaSetuColors.slate900,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Ask about Ayushman CAPF, PMSS, Bharat Ke Veer...',
+                      hintStyle: TextStyle(fontSize: 11.5, color: RakshaSetuColors.slate400),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    ),
+                    onSubmitted: (_) => _handleSend(),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _handleSend,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RakshaSetuColors.obsidianGradient,
+                      border: Border.all(color: const Color(0x6122D3EE), width: 1.0),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x3306B6D4),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.arrow_upward_rounded,
+                        size: 18,
+                        color: Color(0xFF67E8F9),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -333,11 +519,21 @@ class _WelfareRagScreenState extends State<WelfareRagScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white.withValues(alpha: 0.95),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(Icons.inventory_2_outlined, color: Colors.teal),
+            Icon(Icons.inventory_2_outlined, color: RakshaSetuColors.azure, size: 20),
             SizedBox(width: 8),
-            Text('Welfare RAG Corpus'),
+            Text(
+              'Welfare RAG Corpus',
+              style: TextStyle(
+                fontFamily: 'Public Sans',
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: RakshaSetuColors.navy,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -355,7 +551,10 @@ class _WelfareRagScreenState extends State<WelfareRagScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close'),
+            child: const Text(
+              'Close',
+              style: TextStyle(fontFamily: 'Public Sans', fontWeight: FontWeight.w700, color: RakshaSetuColors.azure),
+            ),
           ),
         ],
       ),
@@ -370,11 +569,22 @@ class _WelfareRagScreenState extends State<WelfareRagScreen> {
         children: [
           Expanded(
             flex: 3,
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Public Sans',
+                fontWeight: FontWeight.w700,
+                fontSize: 11.5,
+                color: RakshaSetuColors.slate800,
+              ),
+            ),
           ),
           Expanded(
             flex: 4,
-            child: Text(value, style: TextStyle(fontSize: 12, color: Colors.grey.shade800)),
+            child: Text(
+              value,
+              style: const TextStyle(fontFamily: 'Public Sans', fontSize: 11.5, color: RakshaSetuColors.slate600),
+            ),
           ),
         ],
       ),

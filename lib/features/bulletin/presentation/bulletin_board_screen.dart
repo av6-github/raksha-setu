@@ -4,6 +4,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme/rakshasetu_theme.dart';
+import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/aura_background.dart';
+import '../../../shared/widgets/floating_dock.dart';
+import '../../../shared/widgets/kinetic_dots_loader.dart';
 import '../data/bulletin_recognition_repository.dart';
 import '../domain/bulletin_event.dart';
 import '../../recognition/domain/recognition_award.dart';
@@ -85,41 +90,90 @@ class _BulletinBoardViewState extends State<_BulletinBoardView>
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bulletin & Recognition'),
-        backgroundColor: const Color(0xFF1E3A8A),
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.amber,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(icon: Icon(Icons.event_note_rounded), text: 'Bulletin Events'),
-            Tab(icon: Icon(Icons.military_tech_rounded), text: 'Recognitions'),
-            Tab(icon: Icon(Icons.auto_stories_rounded), text: 'Stories'),
-          ],
-        ),
-      ),
+      backgroundColor: RakshaSetuColors.background,
       floatingActionButton: _tabController.index == 1
-          ? FloatingActionButton.extended(
-              onPressed: () => _showSendAppreciationDialog(context, vm),
-              backgroundColor: const Color(0xFF1E3A8A),
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.favorite_rounded),
-              label: const Text('Give Appreciation'),
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 50.0),
+              child: FloatingActionButton.extended(
+                onPressed: () => _showSendAppreciationDialog(context, vm),
+                backgroundColor: RakshaSetuColors.navy,
+                foregroundColor: Colors.white,
+                icon: const Icon(Icons.favorite_rounded, color: RakshaSetuColors.rose600),
+                label: const Text('Give Appreciation', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
             )
           : null,
-      body: vm.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildBulletinEventsTab(context, vm),
-                _buildRecognitionsTab(context, vm),
-                _buildTestimonialsTab(context, vm),
-              ],
-            ),
+      body: AuraBackground(
+        child: SafeArea(
+          bottom: false,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  // Consistent RakshaSetu Header
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(14, 8, 14, 4),
+                    child: AppHeader(
+                      subtitle: 'Bulletin & Recognition • Hall of Fame',
+                      showBackButton: true,
+                    ),
+                  ),
+
+                  // TabBar
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicatorColor: RakshaSetuColors.gold,
+                      indicatorWeight: 3,
+                      labelColor: RakshaSetuColors.navy,
+                      unselectedLabelColor: RakshaSetuColors.slate500,
+                      labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5),
+                      tabs: const [
+                        Tab(icon: Icon(Icons.event_note_rounded, size: 17), text: 'Events & Calendar'),
+                        Tab(icon: Icon(Icons.military_tech_rounded, size: 17), text: 'Hall of Fame'),
+                        Tab(icon: Icon(Icons.auto_stories_rounded, size: 17), text: 'Stories'),
+                      ],
+                    ),
+                  ),
+
+                  // Tab Views
+                  Expanded(
+                    child: vm.isLoading
+                        ? const Center(
+                            child: KineticDotsLoader(
+                              size: 18,
+                              label: 'Syncing activities & recognitions...',
+                            ),
+                          )
+                        : TabBarView(
+                            controller: _tabController,
+                            children: [
+                              _buildBulletinEventsTab(context, vm),
+                              _buildRecognitionsTab(context, vm),
+                              _buildTestimonialsTab(context, vm),
+                            ],
+                          ),
+                  ),
+                ],
+              ),
+
+              // Pinned Floating Dock
+              const Positioned(
+                left: 0,
+                right: 0,
+                bottom: 6,
+                child: FloatingDock(currentRoute: '/bulletin'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -240,7 +294,7 @@ class _BulletinBoardViewState extends State<_BulletinBoardView>
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 92),
                   itemCount: vm.events.length,
                   itemBuilder: (context, index) {
                     final event = vm.events[index];
@@ -448,7 +502,7 @@ class _BulletinBoardViewState extends State<_BulletinBoardView>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 92),
       itemCount: vm.publicRecognitions.length,
       itemBuilder: (context, index) {
         final rec = vm.publicRecognitions[index];
@@ -545,7 +599,7 @@ class _BulletinBoardViewState extends State<_BulletinBoardView>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 92),
       itemCount: vm.myRecognitions.length,
       itemBuilder: (context, index) {
         final rec = vm.myRecognitions[index];
@@ -651,7 +705,7 @@ class _BulletinBoardViewState extends State<_BulletinBoardView>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 92),
       itemCount: vm.testimonials.length,
       itemBuilder: (context, index) {
         final item = vm.testimonials[index];
