@@ -306,7 +306,6 @@ class _FloatingDockState extends State<FloatingDock>
         ];
 
       case PortalRole.officer:
-      default:
         return [
           _DockIconButton(
             icon: Icons.home_rounded,
@@ -831,7 +830,6 @@ class _PortalDirectorySheetState extends State<_PortalDirectorySheet> {
         ];
 
       case PortalRole.officer:
-      default:
         return [
           _buildCategoryHeader('OFFICER & JAWAN CORE PORTAL'),
           _buildNavigationTile(

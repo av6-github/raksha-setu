@@ -137,14 +137,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 14),
                           Text.rich(
                             const TextSpan(
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Public Sans',
                                 fontSize: 26,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: -0.5,
                                 color: Color(0xFF0A1F2C),
                               ),
-                              children: const [
+                              children: [
                                 TextSpan(text: 'Raksha'),
                                 TextSpan(
                                   text: 'Setu',
