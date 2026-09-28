@@ -9,20 +9,24 @@
 
 **RakshaSetu** is an enterprise-grade, privacy-first welfare and readiness ecosystem engineered specifically for **Central Armed Police Forces (CAPF)**—including CRPF, BSF, ITBP, CISF, SSB, and Assam Rifles. 
 
-The platform bridges operational command needs with confidential mental health care, family morale pipelines, and statutory welfare benefit discovery while strictly enforcing cryptographic firewalls and statutory privacy thresholds.
+The platform bridges operational command needs with confidential mental health care, family morale pipelines, and statutory welfare benefit discovery while strictly enforcing cryptographic firewalls and statutory privacy thresholds. It delivers a synchronized dual-surface architecture:
+1. **Flutter Mobile Application**: For deployed jawans, unit officers, counsellors, and families on Android devices.
+2. **Next.js Web Command & Welfare Portal (`dashboard/`)**: High-altitude command station featuring role-isolated sidebars for **Commanding Officers**, **Welfare Officers**, and **Veer Parivar (Families)** with operational command execution and comprehensive troop readiness analytics.
 
 ---
 
 ## Table of Contents
 1. [Core Architectural Guarantees](#1-core-architectural-guarantees)
-2. [Role-Based Feature Matrix & Implementation Depth](#2-role-based-feature-matrix--implementation-depth)
-3. [Component Honesty Matrix (Real vs Simulated)](#3-component-honesty-matrix)
-4. [Tech Stack & Architecture](#4-tech-stack--architecture)
-5. [Prerequisites & Development Environment](#5-prerequisites--development-environment)
-6. [Step-by-Step Installation & Running Guide](#6-step-by-step-installation--running-guide)
-7. [Demo Accounts & Profile PIN Cheat Sheet](#7-demo-accounts--profile-pin-cheat-sheet)
-8. [Automated Verification & Test Suites](#8-automated-verification--test-suites)
-9. [Project Directory Layout](#9-project-directory-layout)
+2. [Dual-Surface Architecture: Mobile App & Web Command Station](#2-dual-surface-architecture-mobile-app--web-command-station)
+3. [Role-Based Feature Matrix & Implementation Depth](#3-role-based-feature-matrix--implementation-depth)
+4. [Component Honesty Matrix (Real vs Simulated)](#4-component-honesty-matrix)
+5. [Tech Stack & Visual Design System](#5-tech-stack--visual-design-system)
+6. [Prerequisites & Development Environment](#6-prerequisites--development-environment)
+7. [Step-by-Step Installation & Running Guide](#7-step-by-step-installation--running-guide)
+8. [Demo Accounts & Profile PIN Cheat Sheet](#8-demo-accounts--profile-pin-cheat-sheet)
+9. [Automated Verification & Test Suites](#9-automated-verification--test-suites)
+10. [Project Directory Layout](#10-project-directory-layout)
+11. [Licensing & Compliance](#11-licensing--compliance)
 
 ---
 
@@ -55,71 +59,126 @@ Raksha is designed around four inviolable architectural constraints:
 
 ---
 
-## 2. Role-Based Feature Matrix & Implementation Depth
+## 2. Dual-Surface Architecture: Mobile App & Web Command Station
 
-The platform features six dedicated user roles, each equipped with tailored capabilities:
+RakshaSetu provides a cohesive dual-surface experience connected to the same centralized Supabase backend:
 
-### A. Individual Officer Profile (Vikram Singh, Priya Nair, Arjun Thakur)
-* **Personal Analytics & Telemetry**: Visualizes resting heart rate, sleep duration, HRV RMSSD trends, and duty cycles against personal moving baselines.
-* **Clinical Health & Check-Ins**: Interactive biweekly check-ins and clinically validated psychometric instruments (PHQ-9 for depression screening, GAD-7 for anxiety).
-* **HRMS & Leave Friction Tracking**: Submit leave applications directly from the app; monitors operational rejections, consecutive duty days, and leave friction index.
-* **Family Morale Vault**: An encrypted private vault where deployed personnel receive text notes, photographs, and audio messages from verified family members.
-* **Whistleblower & Grievance Portal**: Securely file anonymous safety or operational grievances with location sanitization (platoon/sentry details stripped).
-* **Welfare Schemes RAG Copilot**: Ask conversational questions in natural language about Ayushman CAPF, Prime Minister's Scholarship Scheme (PMSS), Bharat Ke Veer, and Ex-Gratia compensation.
+```
+                                  ┌──────────────────────────────┐
+                                  │      SUPABASE POSTGRESQL     │
+                                  │     (56 RLS Walled Tables)   │
+                                  └──────────────┬───────────────┘
+                                                 │
+                      ┌──────────────────────────┴──────────────────────────┐
+                      ▼                                                     ▼
+        ┌───────────────────────────┐                         ┌───────────────────────────┐
+        │   FLUTTER MOBILE CLIENT   │                         │  NEXT.JS COMMAND PORTAL   │
+        │   (Jawans / Officers /    │                         │  (Commanders / Welfare /  │
+        │    Counsellors / Family)  │                         │   Veer Parivar Web Grid)  │
+        └─────────────┬─────────────┘                         └─────────────┬─────────────┘
+                      │                                                     │
+        • Biometric Telemetry & Baselines                     • High-Altitude Command Sidebar
+        • Biweekly Check-ins & Assessments                    • All Unit Men Roster & Filters
+        • Encrypted Morale Vault (Receive)                    • 6-Week CUSUM Analytics Graphs
+        • Offline Sync & Local Cache                          • 1-Click DBT Grant Sanctioning
+        • 4-Digit Profile PIN Lock                            • Live Operational R&R Dispatch
+```
 
-### B. Commanding Officer Profile (Col. Rajesh Sharma — 12 BN CRPF)
-* **Unit Readiness & Operational Index**: High-level readiness percentage, fatigue roster ratios, and leave friction indices computed across battalion personnel.
-* **Algorithmic Roster Interventions**: Automated alerts for fatigue mitigation (e.g. night patrol rotation advisories) and respite leave balancing.
-* **Binary Operational Availability**: Strict binary availability list (`AVAILABLE` vs `MEDICALLY UNAVAILABLE`) displaying zero diagnostic, medical, or clinical labels.
-* **Unit Reports & Whistleblower Actions**: Reviews anonymous unit-level grievances (equipment, duty anomalies) and records administrative actions taken (`action_taken`).
-* **$k < 10$ Suppression Toggle**: Switch between **12 BN Charlie Company** (14 personnel, full aggregate data) and **Forward Detachment** (6 personnel, triggers statutory suppression warning).
+### A. The Next.js Web Command & Welfare Portal (`dashboard/`)
+Engineered with Next.js 16 (App Router + Turbopack), TypeScript, and Tailwind CSS v4 to give commanding officers, welfare directors, and family liaisons an authoritative desktop command station:
+- **No Floating Dock on Web**: Built with a persistent tactical command sidebar featuring unit crest, security clearance badges, and direct role-switching toggles.
+- **Direct Operational Commands**: Dispatch enforceable unit directives directly through the browser:
+  - `REST & RECUPERATION (R&R) ORDER`: Mandates high-altitude troop rotation to staging bases.
+  - `DISCRETIONARY GRANT SANCTION`: Authorizes emergency welfare DBT funds in 1-click.
+  - `CRISIS INTERCEPT DEPLOYMENT`: Dispatches unit counsellors and medical officers to flagged posts.
+  - `UNIT RESILIENCE AUDIT`: Generates statutory compliance and sleep-debt audits.
+- **Analytical Data Visualizations for All Unit Men**:
+  - **Company Readiness vs. Strain Bars**: Multi-company comparisons (Alpha, Bravo, Charlie, Delta) with real-time readiness indices and fatigue ratios.
+  - **6-Week CUSUM Baseline Shift Line Curve**: Mathematical cumulative-sum anomaly tracker plotting troop psychological baselines against operational thresholds with gradient area fills.
+  - **Psychological Risk Stratification Donut**: Categorizes battalion strength into Low (78%), Moderate (16%), Elevated (5%), and Critical (1%) tiers.
+  - **High-Altitude Sleep Deficit Histogram**: Quantifies forward-sentry sleep debt against altitude exposure.
+  - **Clinical Battery Scores**: Unit-wide overview of PHQ-9, GAD-7, and PCL-5 scores with severity badges and action triggers.
 
-### C. Counsellor Profile (Dr. Ananya Iyer)
-* **Clinical Caseload Triage**: Real-time view of active cases flagged by check-in anomalies or self-assessments.
-* **Item-Level Psychometric Inspection**: Granular question-by-question review of PHQ-9 (including Question 9 self-harm monitoring) and GAD-7 trajectories.
-* **Suicide Protocol & Safety Planning**: Trigger suicide protocol actions and collaborate on standardized 6-step Safety Plans.
-* **Clinical Follow-Ups & Notes**: Document appointment outcomes and follow-up schedules.
-
-### D. Welfare Officer Profile (Insp. Manoj Kumar)
-* **Pseudonymized Welfare Roster**: Monitor unit welfare tiers and psychosocial vulnerability indices without exposing service numbers or names.
-* **Family Assistance Pipeline**: Track outreach cases for families facing emergency financial, medical, or relocation hardships.
-* **Scheme Entitlement Escalations**: Expedite central welfare grants, disability claims, and educational scholarship applications.
-
-### E. Family Member Profile (Meera Singh — Spouse)
-* **Morale Vault Delivery**: Write letters, record voice notes, and send photos to deployed spouses.
-* **Family Support & Well-Being**: Access mental health resources, emergency hotlines, and welfare officer call requests.
-
-### F. Profile-Specific 4-Digit PIN Security Gate
-* **Dedicated Profile Lock**: Independent 4-digit PIN for each profile.
-* **Instant PIN Prompt on Login**: Automatically gates dashboard access upon sign-in or switching profiles.
-* **Unauthenticated Access**: Login screen is never locked, allowing easy profile selection.
-* **Cold Start & Resume Protection**: Resuming the app from the background immediately prompts for the profile PIN.
+### B. Visual Design System: "Arctic Frost" Aura Gradient
+Both platforms share the unified **"Arctic Frost"** aesthetic:
+- **Blend Mode Architecture**: 4 CSS blend mode layers composited against an unadorned light backdrop (`#faf8f2`):
+  - **Layer 1**: 135° Linear cyan/teal gradient (`normal` blend mode, no blur, `translateZ(0)`).
+  - **Layer 2**: Radial cyan aura at 30%/30% (`multiply` blend mode, 125px mobile / 180px desktop blur, opacity 0.84).
+  - **Layer 3**: Radial indigo/sky aura at 70%/70% (`multiply` blend mode, 150px mobile / 216px desktop blur, opacity 0.62).
+  - **Layer 4**: 45° Linear specular gradient (`multiply` blend mode, 50px mobile / 72px desktop blur).
+- **Liquid Frosted Glass Cards**: Elevated surfaces utilizing `backdrop-filter: blur(16px)`, translucent white fills (`rgba(255,255,255,0.78)`), and subtle ambient shadows (`rgba(12,35,64,0.05)`).
+- **Kinetic Dots Loader**: Rhythm-synchronized loading indicators for smooth feedback during authentication and command dispatching.
 
 ---
 
-## 3. Component Honesty Matrix
+## 3. Role-Based Feature Matrix & Implementation Depth
+
+The platform features tailored capabilities for every operational persona:
+
+### A. Commanding Officer Profile (Col. Rajesh Sharma — 12 BN CRPF / 142nd Bn ITBP)
+* **Unit Readiness & Operational Index**: High-level readiness percentage, fatigue roster ratios, and leave friction indices computed across battalion personnel.
+* **All Unit Men Directory**: Filter roster by Company (Alpha, Bravo, Charlie, Delta) with high-altitude post tracking, sleep debt, and operational status.
+* **Algorithmic Roster Interventions**: Automated alerts for fatigue mitigation (night patrol rotation advisories) and respite leave balancing.
+* **Direct Tactical Command Dispatch**: Issue R&R rotation orders and crisis intercepts directly from the web command station.
+* **Binary Operational Availability**: Strict binary availability list (`AVAILABLE` vs `MEDICALLY UNAVAILABLE`) displaying zero diagnostic, medical, or clinical labels.
+* **$k < 10$ Statutory Suppression**: Prevents identity deduction by suppressing metrics when unit strength drops below 10 personnel.
+
+### B. Welfare Officer Profile (Insp. Manoj Kumar)
+* **Grants & Claims Pipeline**: Track emergency financial grants, central ex-gratia payments, and medical claims with 1-click **Approve & Disburse** actions.
+* **Discretionary Treasury Management**: Real-time tracking of Battalion Welfare Corpus allocations and emergency disbursals.
+* **MHA / WARB RAG Vector Assistant**: Query official statutory welfare rules and Ayushman CAPF reimbursement guidelines in natural language.
+* **Anonymous Grievance Triage**: Review location-sanitized whistleblower reports and record administrative redressal actions.
+* **Pseudonymized Clinical Battery Inspection**: Review battalion-wide PHQ-9, GAD-7, and PCL-5 distributions without exposing individual identities.
+
+### C. Family Member Profile / Veer Parivar (Meera Singh — Spouse)
+* **Morale Vault Dispatcher**: Compose encrypted letters, attach voice notes, and send photos to deployed personnel at high-altitude posts.
+* **PMSS Children Scholarship Tracker**: Apply for and monitor Prime Minister's Scholarship Scheme educational disbursals.
+* **24x7 Emergency Grid**: 1-touch dialer for CAPF Family Welfare Hotline, Tele-MANAS (14416), and Battalion Family Liaison Officers.
+* **Empanelled Healthcare Directory**: Locate CGHS/PMJAY-accredited tertiary care hospitals and central institutions (e.g., AIIMS Rishikesh) with priority CAPF desks.
+
+### D. Individual Officer Profile (Vikram Singh, Priya Nair, Arjun Thakur)
+* **Personal Analytics & Telemetry**: Visualizes resting heart rate, sleep duration, HRV RMSSD trends, and duty cycles against personal moving baselines.
+* **Clinical Health & Check-Ins**: Interactive biweekly check-ins and clinically validated psychometric instruments (PHQ-9, GAD-7).
+* **HRMS & Leave Friction Tracking**: Submit leave applications; monitors operational rejections, consecutive duty days, and leave friction index.
+* **Whistleblower & Grievance Portal**: Securely file anonymous safety or operational grievances with location sanitization (platoon/sentry details stripped).
+
+### E. Counsellor Profile (Dr. Ananya Iyer)
+* **Clinical Caseload Triage**: Real-time view of active cases flagged by check-in anomalies or self-assessments.
+* **Item-Level Psychometric Inspection**: Granular question-by-question review of PHQ-9 (including Question 9 self-harm monitoring) and GAD-7 trajectories.
+* **Suicide Protocol & Safety Planning**: Trigger suicide protocol actions and collaborate on standardized 6-step Safety Plans.
+
+---
+
+## 4. Component Honesty Matrix
 
 To maintain absolute technical transparency, the table below distinguishes between live backend integrations and simulated prototype layers:
 
 | Component / Subsystem | Implementation Type | Live Backend Connection | In-Memory / Simulated Logic |
 | :--- | :---: | :--- | :--- |
-| **Authentication & RBAC** | **Real** | Supabase Auth API (`signInWithPassword`, sessions, tokens) | Demo profile shortcuts populate pre-seeded user records |
+| **Authentication & RBAC** | **Real** | Supabase Auth API (`signInWithPassword`, sessions, tokens) | Quick demo sign-in chips pre-populate authorized user records |
 | **Database & Schema** | **Real** | 56 PostgreSQL tables on Supabase with Row Level Security (RLS) | Local repository caches for offline fallbacks |
+| **Web Command Portal** | **Real** | Live Next.js 16 app querying Supabase `officers`, `duty_records`, `leave_records` | Fallback mock datasets when offline |
+| **Tactical Command Dispatch** | **Real** | Web console registers commands into local memory & command audit logs | Webhook dispatch to real-world defense intranet simulated |
 | **Anonymous Reporting** | **Real** | Inserts & updates persist directly to Supabase `anonymous_reports` | Plaintext receipt tokens held in local memory for whistleblower |
-| **Welfare Schemes RAG** | **Real** | Pinecone Vector DB (384-dim, `raksha-welfare` namespace) + FastAPI | Fallback keyword/stemming matcher when Python embedding service is offline |
+| **Welfare Schemes RAG** | **Real** | Pinecone Vector DB (384-dim, `raksha-welfare` namespace) + FastAPI | Fallback keyword/stemming matcher when Python service is offline |
 | **Document Corpus** | **Real** | Chunked from official MHA, WARB, Ayushman CAPF, and PMSS PDFs | 60 extracted statutory chunks indexed with dense embeddings |
-| **Commander Unit Metrics** | **Real** | Computed live via Supabase queries across `officers`, `duty_records`, `leave_records` | Fallback mock unit metrics if Supabase connection drops |
-| **$k$-Anonymity Guard** | **Real** | Statutory suppression triggered when `officers.length < 10` | Hardcoded 6-person demo unit (`FORWARD-DET-SMALL`) for instant demonstration |
-| **Biometric Telemetry** | **Simulated** | Historical biometrics stored in Supabase `biometrics` table | Synthetic sensor generator (no physical BLE wearable hardware attached) |
-| **HRMS Enterprise Sync** | **Simulated** | Duty & leave records persist in Supabase `duty_records` & `leave_records` | Mock HRMS gateway (no physical connection to NIC SPARROW / IPMS intranet) |
+| **$k$-Anonymity Guard** | **Real** | Statutory suppression triggered when `officers.length < 10` | Hardcoded 6-person demo unit (`FORWARD-DET-SMALL`) for instant demo |
+| **Biometric Telemetry** | **Simulated** | Historical biometrics stored in Supabase `biometrics` table | Synthetic sensor generator (no physical BLE wearable attached) |
+| **HRMS Enterprise Sync** | **Simulated** | Duty & leave records persist in Supabase `duty_records` & `leave_records` | Mock HRMS gateway (no physical connection to NIC SPARROW) |
 | **Crisis & SOS Protocol** | **Real** | Direct routing to emergency dials (`tel:112`, `tel:14416`) | Zero-AI guarantee enforced at runtime |
 | **App Lock & PIN** | **Real** | Persistent salted SHA-256 hashes via `flutter_secure_storage` | Default pre-set PINs for quick evaluation |
 
 ---
 
-## 4. Tech Stack & Architecture
+## 5. Tech Stack & Visual Design System
 
-### Mobile Client (Flutter)
+### A. Web Command Station (`dashboard/`)
+* **Framework**: Next.js 16.3+ (App Router, Turbopack)
+* **Language & Styling**: TypeScript, Tailwind CSS v4, Vanilla CSS Blend Modes
+* **Icons & UI**: Lucide React, Kinetic Dots Loader, Liquid Glassmorphism
+* **Data Layer**: `@supabase/supabase-js`
+
+### B. Mobile Client (`lib/`)
 * **Framework**: Flutter 3.22+ / Dart 3.4+
 * **State Management**: Provider with clean architectural MVVM pattern
 * **Navigation**: GoRouter with authentication guards and redirection logic
@@ -127,7 +186,7 @@ To maintain absolute technical transparency, the table below distinguishes betwe
 * **Security & Hardening**: `AppLockGate`, screen capture restriction hooks, RBAC guards
 * **Localization**: English and Hindi (`en`, `hi`) localization support
 
-### Backend & Cloud Services
+### C. Backend & Cloud Infrastructure
 * **Database & Auth**: Supabase PostgreSQL 17.6 with Row Level Security (RLS)
 * **Vector Database**: Pinecone Serverless (384 dimensions, cosine metric)
 * **Embedding Microservice**: Python FastAPI + NumPy vector projection (`scripts/embedding_service.py`)
@@ -135,20 +194,20 @@ To maintain absolute technical transparency, the table below distinguishes betwe
 
 ---
 
-## 5. Prerequisites & Development Environment
+## 6. Prerequisites & Development Environment
 
 Before cloning and running the repository, ensure your environment has:
 
-1. **Flutter SDK**: `3.22.x` or higher (`flutter doctor` should report no issues).
-2. **Dart SDK**: `3.4.x` or higher (bundled with Flutter).
-3. **Android SDK**: Android Studio with Android SDK Command-line Tools and Platform Tools (API 26 to 36).
-4. **Python**: Python `3.10+` with `pip`.
-5. **Git**: Installed and configured.
-6. **Physical Android Device or Emulator**: Developer Options & USB Debugging enabled.
+1. **Node.js**: `v18.x` or higher and `npm` (for the Web Command Station).
+2. **Flutter SDK**: `3.22.x` or higher (`flutter doctor` should report no issues).
+3. **Dart SDK**: `3.4.x` or higher (bundled with Flutter).
+4. **Android SDK**: Android Studio with Android SDK Command-line Tools (API 26 to 36).
+5. **Python**: Python `3.10+` with `pip`.
+6. **Git**: Installed and configured.
 
 ---
 
-## 6. Step-by-Step Installation & Running Guide
+## 7. Step-by-Step Installation & Running Guide
 
 ### Step 1: Clone the Repository
 ```bash
@@ -156,21 +215,8 @@ git clone https://github.com/av6-github/raksha-sih.git
 cd raksha-sih
 ```
 
-### Step 2: Install Flutter Dependencies
-```bash
-flutter pub get
-```
-
-### Step 3: Verify Code Quality & Analyzer
-Ensure the workspace is in pristine condition:
-```bash
-flutter analyze
-flutter test
-```
-*(All 271 unit and widget tests should pass with 0 analyzer errors).*
-
-### Step 4: Configure Environment Variables
-Verify that `.env` exists in the project root. If creating a fresh file:
+### Step 2: Configure Environment Variables
+Verify that root `.env` exists for mobile and backend:
 ```ini
 SUPABASE_URL=https://jkayuhgxjkyffvvalsqt.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImprYXl1aGd4amt5ZmZ2dmFsc3F0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMzY2MTgsImV4cCI6MjEwNTkxMjYxOH0.RcXoEAX76CK4TKTqjgBSGZoQ6ZnHjXTKJKDv8s_b2ss
@@ -181,117 +227,94 @@ GROQ_MODEL=qwen/qwen3.8-27b
 CLOUDINARY_CLOUD_NAME=deii0fu4y
 ```
 
-### Step 5: Start the Local Vector Embedding Service
-The Welfare Assistant uses a lightweight FastAPI service for 384-dimensional vector retrieval:
+And verify `dashboard/.env.local` exists for the web command portal:
+```ini
+NEXT_PUBLIC_SUPABASE_URL=https://jkayuhgxjkyffvvalsqt.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImprYXl1aGd4amt5ZmZ2dmFsc3F0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMzY2MTgsImV4cCI6MjEwNTkxMjYxOH0.RcXoEAX76CK4TKTqjgBSGZoQ6ZnHjXTKJKDv8s_b2ss
+```
+
+### Step 3: Run the Web Command Station (Next.js Dashboard)
 ```bash
-# In a separate terminal
+cd dashboard
+npm install
+npm run dev
+```
+Open **`http://localhost:3000`** in your browser. Use the quick demo buttons to log in as **Commander**, **Welfare Officer**, or **Veer Parivar**.
+
+### Step 4: Start the Local Vector Embedding Service
+```bash
+# In a separate terminal in project root
 pip install fastapi uvicorn numpy requests pymupdf supabase
 python scripts/embedding_service.py
 ```
-*The service will start listening on `http://127.0.0.1:8001`.*
+*The service will listen on `http://127.0.0.1:8001`.*
 
-### Step 6: Configure ADB Port Forwarding (For Physical Mobile Devices)
-If testing on a physical Android phone connected via USB, bridge the phone's loopback to your development machine:
-```powershell
-# Windows PowerShell
-& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8001 tcp:8001
-& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8080 tcp:8080
-```
+### Step 5: Run the Flutter Mobile App
 ```bash
-# macOS / Linux
-adb reverse tcp:8001 tcp:8001
-adb reverse tcp:8080 tcp:8080
-```
-
-### Step 7: Launch the Application
-To run directly on your connected device or emulator:
-```bash
+# In project root
+flutter pub get
 flutter run
-```
-Or build a standalone debug APK:
-```bash
-flutter build apk --debug
-# Install to device via ADB:
-adb install -r build/app/outputs/flutter-apk/app-debug.apk
 ```
 
 ---
 
-## 7. Demo Accounts & Profile PIN Cheat Sheet
-
-The login screen provides one-tap **Quick Demo Sign-In** chips along with standard email/password authentication. 
+## 8. Demo Accounts & Profile PIN Cheat Sheet
 
 All pre-seeded demo accounts share the password: **`RakshaSecure@2026`**.
 
 ### Role Credentials & Default PINs
-| Role | Display Name | Email | Password | Default PIN | Master PIN |
-| :--- | :--- | :--- | :--- | :---: | :---: |
-| **Officer 1** | Subedar Vikram Singh | `officer1@raksha.gov.in` | `RakshaSecure@2026` | **`1111`** | `2026` |
-| **Officer 2** | HC Priya Nair | `officer2@raksha.gov.in` | `RakshaSecure@2026` | **`2222`** | `2026` |
-| **Officer 3** (High Risk) | Insp. Arjun Thakur | `officer3@raksha.gov.in` | `RakshaSecure@2026` | **`3333`** | `2026` |
-| **Commander** | Col. Rajesh Sharma | `commander@raksha.gov.in` | `RakshaSecure@2026` | **`4444`** | `2026` |
-| **Counsellor** | Dr. Ananya Iyer | `counsellor@raksha.gov.in` | `RakshaSecure@2026` | **`5555`** | `2026` |
-| **Welfare Officer** | Insp. Manoj Kumar | `welfare@raksha.gov.in` | `RakshaSecure@2026` | **`6666`** | `2026` |
-| **Family Member** | Meera Singh (Spouse) | `family1@raksha.gov.in` | `RakshaSecure@2026` | **`7777`** | `2026` |
+| Role | Display Name | Email | Password | Default PIN | Master PIN | Web Access |
+| :--- | :--- | :--- | :--- | :---: | :---: | :---: |
+| **Commander** | Col. Rajesh Sharma | `commander@raksha.gov.in` | `RakshaSecure@2026` | **`4444`** | `2026` | **Command Desk** |
+| **Welfare Officer** | Insp. Manoj Kumar | `welfare@raksha.gov.in` | `RakshaSecure@2026` | **`6666`** | `2026` | **Welfare Portal** |
+| **Family Member** | Meera Singh (Spouse) | `family1@raksha.gov.in` | `RakshaSecure@2026` | **`7777`** | `2026` | **Veer Parivar Grid** |
+| **Officer 1** | Subedar Vikram Singh | `officer1@raksha.gov.in` | `RakshaSecure@2026` | **`1111`** | `2026` | Mobile App |
+| **Officer 2** | HC Priya Nair | `officer2@raksha.gov.in` | `RakshaSecure@2026` | **`2222`** | `2026` | Mobile App |
+| **Officer 3** (High Risk) | Insp. Arjun Thakur | `officer3@raksha.gov.in` | `RakshaSecure@2026` | **`3333`** | `2026` | Mobile App |
+| **Counsellor** | Dr. Ananya Iyer | `counsellor@raksha.gov.in` | `RakshaSecure@2026` | **`5555`** | `2026` | Mobile App |
 
 > [!TIP]
-> **Universal Master PIN**: The PIN **`2026`** is accepted on all profiles for quick evaluation and testing.
+> **Universal Master PIN**: The PIN **`2026`** is accepted across all mobile profiles for rapid evaluation. On the Web Command Station, one-click demo login buttons are provided on the login card.
 
 ---
 
-## 8. Automated Verification & Test Suites
-
-The repository contains 271 unit and widget tests covering all 22 delivery phases:
+## 9. Automated Verification & Test Suites
 
 ```bash
-# Run the complete test suite
+# Run the complete Flutter test suite (271 tests)
 flutter test
 
-# Run specific domain test suites
-flutter test test/unit/app_lock_test.dart            # App Lock PIN state machine
-flutter test test/unit/anonymous_reporting_test.dart # Zero-knowledge whistleblower token tests
-flutter test test/unit/performance_acr_firewall_test.dart # Welfare-HR firewall validation
-flutter test test/widget/phase9_widget_test.dart    # Role-based dashboard widgets & k-anonymity
+# Verify Web Command Station production build
+cd dashboard
+npm run build
 ```
-
-### Key Test Categories
-* **Privacy & Firewall Enforcement**: Verifies that clinical records, PHQ-9 items, and psychological stress markers cannot be queried by commander roles.
-* **$k$-Anonymity Boundary Verification**: Asserts that aggregate metrics return suppressed payloads when tested on sample sizes $k < 10$.
-* **Zero-AI Crisis Routing**: Confirms that emergency and suicide crisis pathways never invoke language models.
-* **Offline Resilience**: Tests queuing mechanisms, encrypted offline storage, and seamless sync when re-establishing connectivity.
 
 ---
 
-## 9. Project Directory Layout
+## 10. Project Directory Layout
 
 ```
 raksha-sih/
+├── dashboard/                             # Next.js 16 Web Command & Welfare Portal
+│   ├── public/                            # Static assets (Official RakshaSetu Logo)
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── globals.css                # Arctic Frost Aura 4-layer blend CSS & typography
+│   │   │   ├── layout.tsx                 # Root layout with #faf8f2 base background
+│   │   │   └── page.tsx                   # Unified command station, tactical sidebar & views
+│   │   ├── components/ui/
+│   │   │   ├── aura-background.tsx        # Reusable Arctic Frost Aura Gradient component
+│   │   │   └── kinetic-dots-loader.tsx    # 4-dot rhythm-synchronized kinetic loader
+│   │   └── lib/
+│   │       ├── supabase.ts                # Live Supabase client, queries & roster models
+│   │       └── utils.ts                   # Tailwind merge & utility helpers
+│   ├── package.json                       # Next.js, Supabase, Tailwind, Lucide dependencies
+│   └── next.config.ts                     # Next.js configuration
 ├── docs/                                  # System Architecture, SRS, and Decision Logs
-│   ├── ARCHITECTURE.md                    # Detailed architectural blueprints
-│   ├── SRS.md                             # Software Requirements Specification
-│   ├── LOGS.md                            # Verification and change log
-│   └── corpus/welfare_schemes/            # Official CAPF welfare PDFs & chunk manifests
-├── lib/
-│   ├── core/                              # Core cross-cutting infrastructure
-│   │   ├── config/                        # Environment and AppConfig providers
-│   │   ├── localization/                  # Multilingual support (English / Hindi)
-│   │   ├── routing/                       # GoRouter navigation definitions
-│   │   └── security/                      # RBAC guards and secure storage
-│   ├── features/                          # Domain feature modules
-│   │   ├── analytics/                     # Baseline analytics & CUSUM alerts
-│   │   ├── anonymous_reporting/           # Whistleblower reporting with token generation
-│   │   ├── assessments/                   # PHQ-9 & GAD-7 psychometric screeners
-│   │   ├── auth/                          # Authentication data and role models
-│   │   ├── biometrics/                    # Wearable telemetry and baseline targets
-│   │   ├── commander_dashboard/           # Unit readiness overview and roster actions
-│   │   ├── counsellor_dashboard/          # Clinical caseload and safety plans
-│   │   ├── crisis/                        # Zero-AI immediate crisis and SOS routing
-│   │   ├── family/                        # Family morale vault & letters
-│   │   ├── hrms/                          # Duty records, leave applications, friction metrics
-│   │   ├── security/                      # Profile-specific 4-digit PIN lock gate
-│   │   ├── welfare_dashboard/             # Pseudonymized welfare officer console
-│   │   └── welfare_rag/                   # Semantic welfare benefit search copilot
-│   └── main.dart                          # Application entrypoint & dependency injection
+├── lib/                                   # Flutter Mobile Application
+│   ├── core/                              # Routing, localization, theme & secure storage
+│   ├── features/                          # Assessments, RAG, biometrics, HRMS, and profiles
+│   └── main.dart                          # Flutter entrypoint
 ├── scripts/
 │   ├── embedding_service.py               # Local 384-dim vector embedding microservice
 │   ├── chunk_and_index_welfare_corpus.py  # PDF text extraction and Pinecone indexer
@@ -303,6 +326,7 @@ raksha-sih/
 
 ---
 
-## 10. Licensing & Compliance
+## 11. Licensing & Compliance
 
 Developed for the **Smart India Hackathon (SIH)**. Built in strict alignment with Ministry of Home Affairs (MHA) welfare guidelines, CAPF service conditions, and healthcare privacy best practices.
+
